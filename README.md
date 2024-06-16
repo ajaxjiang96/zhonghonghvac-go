@@ -1,1 +1,1 @@
-# RS485-communication
+# ZhongHongHVAC-go
