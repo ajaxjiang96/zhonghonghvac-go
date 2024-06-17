@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goburrow/serial"
+	"go.bug.st/serial"
 )
 
 const (
@@ -18,7 +18,8 @@ const (
 // serialPort has configuration and I/O controller.
 type serialPort struct {
 	// Serial port configuration.
-	serial.Config
+	serial.Mode
+	address string
 
 	Logger      *log.Logger
 	IdleTimeout time.Duration
@@ -40,7 +41,7 @@ func (mb *serialPort) Connect() (err error) {
 // connect connects to the serial port if it is not connected. Caller must hold the mutex.
 func (mb *serialPort) connect() error {
 	if mb.port == nil {
-		port, err := serial.Open(&mb.Config)
+		port, err := serial.Open(mb.address, &mb.Mode)
 		if err != nil {
 			return err
 		}
@@ -95,4 +96,5 @@ func (mb *serialPort) closeIdle() {
 		mb.logf("modbus: closing connection due to idle timeout: %v", idle)
 		mb.close()
 	}
+	return
 }

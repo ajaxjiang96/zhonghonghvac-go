@@ -1,7 +1,6 @@
-package modbusclient
+package zhonghongprotocol
 
 import (
-	"encoding/binary"
 	"fmt"
 	"io"
 	"time"
@@ -51,7 +50,7 @@ func RTUClient(address string) Client {
 
 // rtuPackager implements Packager interface.
 type rtuPackager struct {
-	SlaveId byte
+	// SlaveId byte
 }
 
 // Encode encodes PDU in a RTU frame:
@@ -64,7 +63,7 @@ func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
 	// todo check header to find length
 	length := len(pdu.Data) + 3
 	if length > rtuMaxSize {
-		err = fmt.Errorf("modbus: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
+		err = fmt.Errorf("zhonghongprotocol: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
 		return
 	}
 	adu = make([]byte, length)
@@ -85,12 +84,12 @@ func (mb *rtuPackager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 	length := len(aduResponse)
 	// Minimum size (including address, function and CRC)
 	if length < rtuMinSize {
-		err = fmt.Errorf("modbus: response length '%v' does not meet minimum '%v'", length, rtuMinSize)
+		err = fmt.Errorf("zonghongprotocol: response length '%v' does not meet minimum '%v'", length, rtuMinSize)
 		return
 	}
 	// Slave address must match
 	if aduResponse[0] != aduRequest[0] {
-		err = fmt.Errorf("modbus: response slave id '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
+		err = fmt.Errorf("zonghongprotocol: response slave id '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
 		return
 	}
 	return
@@ -105,7 +104,7 @@ func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 	computedChecksum := checksumInstance.Checksum(adu[0 : len(adu)-1])
 
 	if computedChecksum != receivedChecksum {
-		err = fmt.Errorf("modbus: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
+		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
 		return
 	}
 	// Function code & data
@@ -132,7 +131,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 
 	// Send the request
 	mb.serialPort.logf("modbus: sending % x\n", aduRequest)
-	if _, err = mb.port.Write(aduRequest); err != nil {
+	if _, err = mb.serialPort.Write(aduRequest); err != nil {
 		return
 	}
 	function := aduRequest[1]
@@ -145,7 +144,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	var data [rtuMaxSize]byte
 	//We first read the minimum length and then read either the full package
 	//or the error package, depending on the error status (byte 2 of the response)
-	n, err = io.ReadAtLeast(mb.port, data[:], rtuMinSize)
+	n, err = io.ReadAtLeast(mb.serialPort, data[:], rtuMinSize)
 	if err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		if n < bytesToRead {
 			if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
 				if bytesToRead > n {
-					n1, err = io.ReadFull(mb.port, data[n:bytesToRead])
+					n1, err = io.ReadFull(mb.serialPort, data[n:bytesToRead])
 					n += n1
 				}
 			}
@@ -163,7 +162,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	} else if data[1] == functionFail {
 		//for error we need to read 5 bytes
 		if n < rtuExceptionSize {
-			n1, err = io.ReadFull(mb.port, data[n:rtuExceptionSize])
+			n1, err = io.ReadFull(mb.serialPort, data[n:rtuExceptionSize])
 		}
 		n += n1
 	}
@@ -172,21 +171,21 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		return
 	}
 	aduResponse = data[:n]
-	mb.serialPort.logf("modbus: received % x\n", aduResponse)
+	mb.serialPort.logf("zonghongprotocol: received % x\n", aduResponse)
 	return
 }
 
 // calculateDelay roughly calculates time needed for the next frame.
-// See MODBUS over Serial Line - Specification and Implementation Guide (page 13).
+// See zonghongprotocol over Serial Line - Specification and Implementation Guide (page 13).
 func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 	var characterDelay, frameDelay int // us
 
-	if mb.BaudRate <= 0 || mb.BaudRate > 19200 {
+	if mb.serialPort.BaudRate <= 0 || mb.serialPort.BaudRate > 19200 {
 		characterDelay = 750
 		frameDelay = 1750
 	} else {
-		characterDelay = 15000000 / mb.BaudRate
-		frameDelay = 35000000 / mb.BaudRate
+		characterDelay = 15000000 / mb.serialPort.BaudRate
+		frameDelay = 35000000 / mb.serialPort.BaudRate
 	}
 	return time.Duration(characterDelay*chars+frameDelay) * time.Microsecond
 }
@@ -194,27 +193,27 @@ func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 func calculateResponseLength(adu []byte) int {
 	length := rtuMinSize
 	switch adu[1] {
-	case FuncCodeReadDiscreteInputs,
-		FuncCodeReadCoils:
-		count := int(binary.BigEndian.Uint16(adu[4:]))
-		length += 1 + count/8
-		if count%8 != 0 {
-			length++
-		}
-	case FuncCodeReadInputRegisters,
-		FuncCodeReadHoldingRegisters,
-		FuncCodeReadWriteMultipleRegisters:
-		count := int(binary.BigEndian.Uint16(adu[4:]))
-		length += 1 + count*2
-	case FuncCodeWriteSingleCoil,
-		FuncCodeWriteMultipleCoils,
-		FuncCodeWriteSingleRegister,
-		FuncCodeWriteMultipleRegisters:
-		length += 4
-	case FuncCodeMaskWriteRegister:
-		length += 6
-	case FuncCodeReadFIFOQueue:
-		// undetermined
+	// case FuncCodeReadDiscreteInputs,
+	// 	FuncCodeReadCoils:
+	// 	count := int(binary.BigEndian.Uint16(adu[4:]))
+	// 	length += 1 + count/8
+	// 	if count%8 != 0 {
+	// 		length++
+	// 	}
+	// case FuncCodeReadInputRegisters,
+	// 	FuncCodeReadHoldingRegisters,
+	// 	FuncCodeReadWriteMultipleRegisters:
+	// 	count := int(binary.BigEndian.Uint16(adu[4:]))
+	// 	length += 1 + count*2
+	// case FuncCodeWriteSingleCoil,
+	// 	FuncCodeWriteMultipleCoils,
+	// 	FuncCodeWriteSingleRegister,
+	// 	FuncCodeWriteMultipleRegisters:
+	// 	length += 4
+	// case FuncCodeMaskWriteRegister:
+	// 	length += 6
+	// case FuncCodeReadFIFOQueue:
+	// 	// undetermined
 	default:
 	}
 	return length
