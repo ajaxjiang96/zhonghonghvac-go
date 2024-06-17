@@ -27,9 +27,12 @@ func (mb *client) ReadGateway() (results []byte, err error) {
 		FunctionCode: FuncCodeReadGateway,
 		Data:         []byte{0x00, 0x00, 0x00, 0x00},
 	}
-	_, err = mb.send(&request)
-	// todo check response data
-	return
+	resp, err := mb.send(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Data, nil
 }
 
 func (mb *client) send(request *ProtocolDataUnit) (response *ProtocolDataUnit, err error) {

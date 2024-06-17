@@ -192,13 +192,8 @@ func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 func calculateResponseLength(adu []byte) int {
 	length := rtuMinSize
 	switch adu[1] {
-	// case FuncCodeReadDiscreteInputs,
-	// 	FuncCodeReadCoils:
-	// 	count := int(binary.BigEndian.Uint16(adu[4:]))
-	// 	length += 1 + count/8
-	// 	if count%8 != 0 {
-	// 		length++
-	// 	}
+	case FuncCodeReadGateway:
+		length = 46
 	// case FuncCodeReadInputRegisters,
 	// 	FuncCodeReadHoldingRegisters,
 	// 	FuncCodeReadWriteMultipleRegisters:
@@ -212,7 +207,7 @@ func calculateResponseLength(adu []byte) int {
 	// case FuncCodeMaskWriteRegister:
 	// 	length += 6
 	// case FuncCodeReadFIFOQueue:
-	// 	// undetermined
+	// undetermined
 	default:
 	}
 	return length
