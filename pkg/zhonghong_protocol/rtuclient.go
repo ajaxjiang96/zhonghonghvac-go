@@ -36,8 +36,7 @@ func (c *ChecksumStruct) Checksum(data []byte) int {
 // NewRTUClientHandler allocates and initializes a RTUClientHandler.
 func NewRTUClientHandler(address string) *RTUClientHandler {
 	handler := &RTUClientHandler{}
-	handler.Address = address
-	handler.Timeout = serialTimeout
+	handler.address = address
 	handler.IdleTimeout = serialIdleTimeout
 	return handler
 }
@@ -55,7 +54,7 @@ type rtuPackager struct {
 
 // Encode encodes PDU in a RTU frame:
 //
-//	Slave Address   : 1 byte
+//	Header   : 1 byte
 //	Function        : 1 byte
 //	Data            : 0 up to 252 bytes
 //	CRC             : 2 byte
@@ -131,7 +130,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 
 	// Send the request
 	mb.serialPort.logf("modbus: sending % x\n", aduRequest)
-	if _, err = mb.serialPort.Write(aduRequest); err != nil {
+	if _, err = mb.serialPort.port.Write(aduRequest); err != nil {
 		return
 	}
 	function := aduRequest[1]
@@ -144,7 +143,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	var data [rtuMaxSize]byte
 	//We first read the minimum length and then read either the full package
 	//or the error package, depending on the error status (byte 2 of the response)
-	n, err = io.ReadAtLeast(mb.serialPort, data[:], rtuMinSize)
+	n, err = io.ReadAtLeast(mb.serialPort.port, data[:], rtuMinSize)
 	if err != nil {
 		return
 	}
@@ -154,7 +153,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		if n < bytesToRead {
 			if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
 				if bytesToRead > n {
-					n1, err = io.ReadFull(mb.serialPort, data[n:bytesToRead])
+					n1, err = io.ReadFull(mb.serialPort.port, data[n:bytesToRead])
 					n += n1
 				}
 			}
@@ -162,7 +161,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	} else if data[1] == functionFail {
 		//for error we need to read 5 bytes
 		if n < rtuExceptionSize {
-			n1, err = io.ReadFull(mb.serialPort, data[n:rtuExceptionSize])
+			n1, err = io.ReadFull(mb.serialPort.port, data[n:rtuExceptionSize])
 		}
 		n += n1
 	}
