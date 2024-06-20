@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 	"time"
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongserial"
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongchecksum"
 
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongchecksum"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongserial"
 )
 
 const (
@@ -21,8 +21,6 @@ type RTUClientHandler struct {
 	rtuPackager
 	rtuSerialTransporter
 }
-
-
 
 // NewRTUClientHandler allocates and initializes a RTUClientHandler.
 func NewRTUClientHandler(address string) *RTUClientHandler {
