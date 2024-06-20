@@ -1,6 +1,6 @@
-package zhonghongprotocol
+package zhonghongbywireprotocol
 
-type ClientRemote interface {
+type ClientByWire interface {
 	// Bit access
 	//todo change result to struct instead of byte
 	FunctionCheck(address []uint16) (results *ProtocolDataUnit, err error)

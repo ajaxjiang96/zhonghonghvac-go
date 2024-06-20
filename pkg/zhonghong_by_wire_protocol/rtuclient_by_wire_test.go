@@ -1,8 +1,10 @@
-package zhonghongprotocol
+package zhonghongbywireprotocol_test
 
 import (
 	"bytes"
 	"testing"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghongserial"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghongprotocol"
 )
 
 func TestRTUEncoding(t *testing.T) {

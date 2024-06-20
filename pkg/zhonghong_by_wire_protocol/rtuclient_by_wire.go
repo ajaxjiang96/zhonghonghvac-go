@@ -1,9 +1,11 @@
-package zhonghongprotocol
+package zhonghongbywireprotocol
 
 import (
 	"fmt"
 	"io"
 	"time"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongserial"
+
 )
 
 const (
@@ -19,9 +21,8 @@ type RTUClientHandler struct {
 	rtuSerialTransporter
 }
 
-type ChecksumStruct struct{}
 
-func (c *ChecksumStruct) Checksum(data []byte) int {
+func Checksum(data []byte) int {
 	sum := 0
 	for _, b := range data {
 		sum = sum + int(b)
@@ -53,51 +54,31 @@ type rtuPackager struct {
 //	Header   : 1 byte
 //	Function        : 1 byte
 //	Data            : 0 up to 252 bytes
-//	CRC             : 2 byte
+//	Checksum             : 1 byte
 func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
-	if pdu.CommandType == "remote" {
-		length := uint16(pdu.Address[0])
-		if length > rtuMaxSize {
-			err = fmt.Errorf("zhonghongprotocol: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
-			return
-		}
-		adu = make([]byte, length)
-
-		adu[0] = pdu.Header
-		adu[4] = pdu.FunctionCode
-		copy(adu[1:4], pdu.Address)
-		copy(adu[5:], pdu.Commands)
-
-		checksumInstance := &ChecksumStruct{}
-		checksum := checksumInstance.Checksum(adu[0 : length-1])
-
-		adu[length-1] = byte(checksum)
-		return
-	} else {
-		length := len(pdu.Address) + len(pdu.Commands) + 3
-		if length > rtuMaxSize {
-			err = fmt.Errorf("zhonghongprotocol: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
-			return
-		}
-		adu = make([]byte, length)
-
-		adu[0] = pdu.Header
-		adu[1] = pdu.FunctionCode
-		copy(adu[2:], pdu.Data)
-
-		checksumInstance := &ChecksumStruct{}
-		checksum := checksumInstance.Checksum(adu[0 : length-1])
-
-		adu[length-1] = byte(checksum)
+	length := uint16(pdu.Address[0])
+	if length > rtuMaxSize {
+		err = fmt.Errorf("zhonghongprotocol: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
 		return
 	}
+	adu = make([]byte, length)
+
+	adu[0] = pdu.Header
+	adu[4] = pdu.FunctionCode
+	copy(adu[1:4], pdu.Address)
+	copy(adu[5:], pdu.Commands)
+
+	checksum := Checksum(adu[0 : length-1])
+
+	adu[length-1] = byte(checksum)
+	return
 
 }
 
 // Verify verifies response length and slave id.
 func (mb *rtuPackager) Verify(aduRequest []byte, aduResponse []byte) (err error) {
 	length := len(aduResponse)
-	// Minimum size (including address, function and CRC)
+	// Minimum size (including address, function and checksum)
 	if length < rtuMinSize {
 		err = fmt.Errorf("zonghongprotocol: response length '%v' does not meet minimum '%v'", length, rtuMinSize)
 		return
@@ -110,32 +91,11 @@ func (mb *rtuPackager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 	return
 }
 
-// Decode extracts PDU from RTU frame and verify CRC.
+// Decode extracts PDU from RTU frame and verify checksum.
 func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 	length := len(adu)
 	receivedChecksum := int(adu[len(adu)-1])
-	checksumInstance := &ChecksumStruct{}
-
-	computedChecksum := checksumInstance.Checksum(adu[0 : len(adu)-1])
-
-	if computedChecksum != receivedChecksum {
-		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
-		return
-	}
-	// Function code & data
-	pdu = &ProtocolDataUnit{}
-	pdu.Header = adu[0]
-	pdu.FunctionCode = adu[1]
-	pdu.Data = adu[1 : length-1]
-	return
-}
-
-func (mb *rtuPackager) DecodeRemote(adu []byte) (pdu *ProtocolDataUnit, err error) {
-	length := len(adu)
-	receivedChecksum := int(adu[len(adu)-1])
-	checksumInstance := &ChecksumStruct{}
-
-	computedChecksum := checksumInstance.Checksum(adu[0 : len(adu)-1])
+	computedChecksum := Checksum(adu[0 : len(adu)-1])
 
 	if computedChecksum != receivedChecksum {
 		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
@@ -151,7 +111,7 @@ func (mb *rtuPackager) DecodeRemote(adu []byte) (pdu *ProtocolDataUnit, err erro
 
 // rtuSerialTransporter implements Transporter interface.
 type rtuSerialTransporter struct {
-	serialPort
+	zhonghongserial.SerialPort
 }
 
 func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err error) {

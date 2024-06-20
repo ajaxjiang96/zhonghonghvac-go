@@ -1,4 +1,4 @@
-package zhonghongprotocol
+package zhonghonggatewayprotocol
 
 type Client interface {
 	// Bit access
