@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongserial"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongchecksum"
 
 )
 
@@ -22,13 +23,6 @@ type RTUClientHandler struct {
 }
 
 
-func Checksum(data []byte) int {
-	sum := 0
-	for _, b := range data {
-		sum = sum + int(b)
-	}
-	return sum % 256
-}
 
 // NewRTUClientHandler allocates and initializes a RTUClientHandler.
 func NewRTUClientHandler(address string) *RTUClientHandler {
@@ -68,7 +62,7 @@ func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
 	copy(adu[1:4], pdu.Address)
 	copy(adu[5:], pdu.Commands)
 
-	checksum := Checksum(adu[0 : length-1])
+	checksum := zhonghongchecksum.Checksum(adu[0 : length-1])
 
 	adu[length-1] = byte(checksum)
 	return
@@ -95,7 +89,7 @@ func (mb *rtuPackager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 	length := len(adu)
 	receivedChecksum := int(adu[len(adu)-1])
-	computedChecksum := Checksum(adu[0 : len(adu)-1])
+	computedChecksum := zhonghongchecksum.Checksum(adu[0 : len(adu)-1])
 
 	if computedChecksum != receivedChecksum {
 		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
