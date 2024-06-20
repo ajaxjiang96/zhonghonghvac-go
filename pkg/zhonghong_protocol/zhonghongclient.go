@@ -1,7 +1,6 @@
 package zhonghongprotocol
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
@@ -16,7 +15,7 @@ type client struct {
 	transporter Transporter
 }
 
-// NewClient creates a new modbus client with given backend handler.
+// NewClient creates a new Zhonghong client with given backend handler.
 func NewClient(handler ClientHandler) Client {
 	return &client{packager: handler, transporter: handler}
 }
@@ -58,24 +57,8 @@ func (mb *client) send(request *ProtocolDataUnit) (response *ProtocolDataUnit, e
 	}
 	if response.Data == nil || len(response.Data) == 0 {
 		// Empty response
-		err = fmt.Errorf("modbus: response data is empty")
+		err = fmt.Errorf("Zhonghong: response data is empty")
 		return
 	}
 	return
-}
-
-func dataBlock(value ...uint16) []byte {
-	data := make([]byte, 2*len(value))
-	for i, v := range value {
-		binary.BigEndian.PutUint16(data[i*2:], v)
-	}
-	return data
-}
-
-func responseError(response *ProtocolDataUnit) error {
-	mbError := &ModbusError{FunctionCode: response.FunctionCode}
-	if response.Data != nil && len(response.Data) > 0 {
-		mbError.ExceptionCode = response.Data[0]
-	}
-	return mbError
 }

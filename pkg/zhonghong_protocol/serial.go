@@ -93,7 +93,7 @@ func (mb *serialPort) closeIdle() {
 	}
 	idle := time.Now().Sub(mb.lastActivity)
 	if idle >= mb.IdleTimeout {
-		mb.logf("modbus: closing connection due to idle timeout: %v", idle)
+		mb.logf("Zhonghong: closing connection due to idle timeout: %v", idle)
 		mb.close()
 	}
 	return

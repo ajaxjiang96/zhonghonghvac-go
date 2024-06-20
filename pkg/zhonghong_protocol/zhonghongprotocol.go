@@ -8,6 +8,23 @@ const (
 	// Bit access
 	FuncCodeReadGateway = 0xB0
 	HeadCodeReadGateway = 0xFF
+	FuncCodeFunctionCheck = 0x01
+	HeadCodeFunctionCheck = 0xDD
+	FuncCodeStatusCheck = 0x02
+	HeadCodeStatusCheck = 0xDD
+	FuncCodeOnOff = 0x03
+	HeadCodeOnOff = 0xDD
+	FuncCodeErrorCheck = 0x04
+	HeadCodeErrorCheck = 0xDD
+	FuncCodeFreshAirCheck = 0x12
+	HeadCodeFreshAirCheck = 0xDD
+	FuncCodeFreshAirControl = 0x13
+	HeadCodeFreshAirControl = 0xDD
+	FuncCodeFreshAirErrorCheck = 0x14
+	HeadCodeFreshAirErrorCheck = 0xDD
+	ON = 0x01
+	OFF = 0x00
+	
 )
 
 const (
@@ -22,14 +39,14 @@ const (
 	ExceptionCodeGatewayTargetDeviceFailedToRespond = 11
 )
 
-// ModbusError implements error interface.
-type ModbusError struct {
+// ZhonghongError implements error interface.
+type ZhonghongError struct {
 	FunctionCode  byte
 	ExceptionCode byte
 }
 
-// Error converts known modbus exception code to error message.
-func (e *ModbusError) Error() string {
+// Error converts known Zhonghong exception code to error message.
+func (e *ZhonghongError) Error() string {
 	var name string
 	switch e.ExceptionCode {
 	case ExceptionCodeIllegalFunction:
@@ -53,20 +70,24 @@ func (e *ModbusError) Error() string {
 	default:
 		name = "unknown"
 	}
-	return fmt.Sprintf("modbus: exception '%v' (%s), function '%v'", e.ExceptionCode, name, e.FunctionCode)
+	return fmt.Sprintf("Zhonghong: exception '%v' (%s), function '%v'", e.ExceptionCode, name, e.FunctionCode)
 }
 
 // ProtocolDataUnit (PDU) is independent of underlying communication layers.
 type ProtocolDataUnit struct {
 	Header       byte
 	FunctionCode byte
-	Data         []byte
+	CommandType  string
+	Data		 []byte
+	Address      []byte
+	Commands  	 []byte
 }
 
 // Packager specifies the communication layer.
 type Packager interface {
 	Encode(pdu *ProtocolDataUnit) (adu []byte, err error)
 	Decode(adu []byte) (pdu *ProtocolDataUnit, err error)
+	DecodeRemote(adu []byte) (pdu *ProtocolDataUnit, err error)
 	Verify(aduRequest []byte, aduResponse []byte) (err error)
 }
 
