@@ -1,4 +1,4 @@
-package zhonghongprotocol
+package zhonghonggatewayprotocol
 
 import (
 	"io"
@@ -8,7 +8,8 @@ import (
 
 type TCPClientHandler struct {
 	tcpTransporter
-	rtuPackager
+	// rtuPackager
+	// Todo: fix with new rtuclient here
 }
 
 type tcpTransporter struct {
@@ -16,14 +17,14 @@ type tcpTransporter struct {
 	timeout time.Duration
 }
 
-func TCPClient(socket net.Conn) Client {
-	handler := newTCPClientHandler(socket)
-	return NewClient(handler)
-}
+// func TCPClient(socket net.Conn) Client {
+// 	handler := newTCPClientHandler(socket)
+// 	// return NewClient(handler)
+// }
 
 func newTCPClientHandler(conn net.Conn) *TCPClientHandler {
 	return &TCPClientHandler{
-		rtuPackager: rtuPackager{},
+		// rtuPackager: rtuPackager{},
 		tcpTransporter: tcpTransporter{
 			socket:  conn,
 			timeout: 5 * time.Second,
@@ -43,9 +44,9 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 		return
 	}
 
-	bytesToRead := calculateResponseLength(aduRequest)
+	// bytesToRead := calculateResponseLength(aduRequest)
 
-	aduResponse = make([]byte, bytesToRead)
+	// aduResponse = make([]byte, bytesToRead)
 	_, err = io.ReadFull(handler.socket, aduResponse)
 	if err != nil {
 		return

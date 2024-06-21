@@ -1,4 +1,4 @@
-package zhonghongprotocol
+package zhonghongbywireprotocol
 
 import (
 	"io"
