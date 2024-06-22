@@ -1,12 +1,13 @@
-package zhonghongbywireprotocol
+package b27protocol
 
 import (
 	"fmt"
 	"io"
 	"time"
 
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongchecksum"
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongserial"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/checksum"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/serial"
 )
 
 const (
@@ -25,13 +26,13 @@ type RTUClientHandler struct {
 // NewRTUClientHandler allocates and initializes a RTUClientHandler.
 func NewRTUClientHandler(address string) *RTUClientHandler {
 	handler := &RTUClientHandler{}
-	handler.address = address
-	handler.IdleTimeout = serialIdleTimeout
+	handler.Address = address
+	handler.IdleTimeout = serial.SerialIdleTimeout
 	return handler
 }
 
 // RTUClient creates RTU client with default handler and given connect string.
-func RTUClient(address string) Client {
+func RTUClient(address string) Clientb27 {
 	handler := NewRTUClientHandler(address)
 	return NewClient(handler)
 }
@@ -47,7 +48,7 @@ type rtuPackager struct {
 //	Function        : 1 byte
 //	Data            : 0 up to 252 bytes
 //	Checksum             : 1 byte
-func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
+func (mb *rtuPackager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err error) {
 	length := uint16(pdu.Address[0])
 	if length > rtuMaxSize {
 		err = fmt.Errorf("zhonghongprotocol: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
@@ -60,7 +61,7 @@ func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
 	copy(adu[1:4], pdu.Address)
 	copy(adu[5:], pdu.Commands)
 
-	checksum := zhonghongchecksum.Checksum(adu[0 : length-1])
+	checksum := checksum.Checksum(adu[0 : length-1])
 
 	adu[length-1] = byte(checksum)
 	return
@@ -84,17 +85,17 @@ func (mb *rtuPackager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 }
 
 // Decode extracts PDU from RTU frame and verify checksum.
-func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
+func (mb *rtuPackager) Decode(adu []byte) (pdu *protocol.ProtocolDataUnit, err error) {
 	length := len(adu)
 	receivedChecksum := int(adu[len(adu)-1])
-	computedChecksum := zhonghongchecksum.Checksum(adu[0 : len(adu)-1])
+	computedChecksum := checksum.Checksum(adu[0 : len(adu)-1])
 
 	if computedChecksum != receivedChecksum {
 		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
 		return
 	}
 	// Function code & data
-	pdu = &ProtocolDataUnit{}
+	pdu = &protocol.ProtocolDataUnit{}
 	pdu.Header = adu[0]
 	pdu.FunctionCode = adu[4]
 	pdu.Data = append(adu[1:4], adu[5:length-1]...)
@@ -103,21 +104,21 @@ func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 
 // rtuSerialTransporter implements Transporter interface.
 type rtuSerialTransporter struct {
-	zhonghongserial.SerialPort
+	serial.SerialPort
 }
 
 func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err error) {
 	// Make sure port is connected
-	if err = mb.serialPort.connect(); err != nil {
+	if err = mb.SerialPort.Connect(); err != nil {
 		return
 	}
 	// Start the timer to close when idle
-	mb.serialPort.lastActivity = time.Now()
-	mb.serialPort.startCloseTimer()
+	mb.SerialPort.LastActivity = time.Now()
+	mb.SerialPort.StartCloseTimer()
 
 	// Send the request
-	mb.serialPort.logf("Zhonghong: sending % x\n", aduRequest)
-	if _, err = mb.serialPort.port.Write(aduRequest); err != nil {
+	mb.SerialPort.Logf("Zhonghong: sending % x\n", aduRequest)
+	if _, err = mb.SerialPort.Port.Write(aduRequest); err != nil {
 		return
 	}
 	function := aduRequest[1]
@@ -130,7 +131,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	var data [rtuMaxSize]byte
 	//We first read the minimum length and then read either the full package
 	//or the error package, depending on the error status (byte 2 of the response)
-	n, err = io.ReadAtLeast(mb.serialPort.port, data[:], rtuMinSize)
+	n, err = io.ReadAtLeast(mb.SerialPort.Port, data[:], rtuMinSize)
 	if err != nil {
 		return
 	}
@@ -140,7 +141,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		if n < bytesToRead {
 			if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
 				if bytesToRead > n {
-					n1, err = io.ReadFull(mb.serialPort.port, data[n:bytesToRead])
+					n1, err = io.ReadFull(mb.SerialPort.Port, data[n:bytesToRead])
 					n += n1
 				}
 			}
@@ -148,7 +149,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	} else if data[1] == functionFail {
 		//for error we need to read 5 bytes
 		if n < rtuExceptionSize {
-			n1, err = io.ReadFull(mb.serialPort.port, data[n:rtuExceptionSize])
+			n1, err = io.ReadFull(mb.SerialPort.Port, data[n:rtuExceptionSize])
 		}
 		n += n1
 	}
@@ -157,7 +158,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		return
 	}
 	aduResponse = data[:n]
-	mb.serialPort.logf("zonghongprotocol: received % x\n", aduResponse)
+	mb.SerialPort.Logf("zonghongprotocol: received % x\n", aduResponse)
 	return
 }
 
@@ -166,12 +167,12 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 	var characterDelay, frameDelay int // us
 
-	if mb.serialPort.BaudRate <= 0 || mb.serialPort.BaudRate > 19200 {
+	if mb.SerialPort.BaudRate <= 0 || mb.SerialPort.BaudRate > 19200 {
 		characterDelay = 750
 		frameDelay = 1750
 	} else {
-		characterDelay = 15000000 / mb.serialPort.BaudRate
-		frameDelay = 35000000 / mb.serialPort.BaudRate
+		characterDelay = 15000000 / mb.SerialPort.BaudRate
+		frameDelay = 35000000 / mb.SerialPort.BaudRate
 	}
 	return time.Duration(characterDelay*chars+frameDelay) * time.Microsecond
 }
@@ -179,7 +180,7 @@ func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 func calculateResponseLength(adu []byte) int {
 	length := rtuMinSize
 	switch adu[1] {
-	case FuncCodeReadGateway:
+	case protocol.FuncCodeReadGateway:
 		length = 46
 	// case FuncCodeReadInputRegisters,
 	// 	FuncCodeReadHoldingRegisters,

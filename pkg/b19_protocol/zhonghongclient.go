@@ -1,4 +1,4 @@
-package zhonghonggatewayprotocol
+package b19protocol
 
 // // ClientHandler is the interface that groups the Packager and Transporter methods.
 // type ClientHandler interface {

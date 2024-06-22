@@ -1,4 +1,4 @@
-package zhonghongprotocol
+package protocol
 
 import (
 	"fmt"
@@ -6,25 +6,24 @@ import (
 
 const (
 	// Bit access
-	FuncCodeReadGateway = 0xB0
-	HeadCodeReadGateway = 0xFF
-	FuncCodeFunctionCheck = 0x01
-	HeadCodeFunctionCheck = 0xDD
-	FuncCodeStatusCheck = 0x02
-	HeadCodeStatusCheck = 0xDD
-	FuncCodeOnOff = 0x03
-	HeadCodeOnOff = 0xDD
-	FuncCodeErrorCheck = 0x04
-	HeadCodeErrorCheck = 0xDD
-	FuncCodeFreshAirCheck = 0x12
-	HeadCodeFreshAirCheck = 0xDD
-	FuncCodeFreshAirControl = 0x13
-	HeadCodeFreshAirControl = 0xDD
+	FuncCodeReadGateway        = 0xB0
+	HeadCodeReadGateway        = 0xFF
+	FuncCodeFunctionCheck      = 0x01
+	HeadCodeFunctionCheck      = 0xDD
+	FuncCodeStatusCheck        = 0x02
+	HeadCodeStatusCheck        = 0xDD
+	FuncCodeOnOff              = 0x03
+	HeadCodeOnOff              = 0xDD
+	FuncCodeErrorCheck         = 0x04
+	HeadCodeErrorCheck         = 0xDD
+	FuncCodeFreshAirCheck      = 0x12
+	HeadCodeFreshAirCheck      = 0xDD
+	FuncCodeFreshAirControl    = 0x13
+	HeadCodeFreshAirControl    = 0xDD
 	FuncCodeFreshAirErrorCheck = 0x14
 	HeadCodeFreshAirErrorCheck = 0xDD
-	ON = 0x01
-	OFF = 0x00
-	
+	ON                         = 0x01
+	OFF                        = 0x00
 )
 
 const (
@@ -78,16 +77,15 @@ type ProtocolDataUnit struct {
 	Header       byte
 	FunctionCode byte
 	CommandType  string
-	Data		 []byte
+	Data         []byte
 	Address      []byte
-	Commands  	 []byte
+	Commands     []byte
 }
 
 // Packager specifies the communication layer.
 type Packager interface {
 	Encode(pdu *ProtocolDataUnit) (adu []byte, err error)
 	Decode(adu []byte) (pdu *ProtocolDataUnit, err error)
-	DecodeRemote(adu []byte) (pdu *ProtocolDataUnit, err error)
 	Verify(aduRequest []byte, aduResponse []byte) (err error)
 }
 

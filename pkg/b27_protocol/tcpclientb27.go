@@ -1,4 +1,4 @@
-package zhonghongbywireprotocol
+package b27protocol
 
 import (
 	"io"
@@ -16,7 +16,7 @@ type tcpTransporter struct {
 	timeout time.Duration
 }
 
-func TCPClient(socket net.Conn) Client {
+func TCPClient(socket net.Conn) Clientb27 {
 	handler := newTCPClientHandler(socket)
 	return NewClient(handler)
 }

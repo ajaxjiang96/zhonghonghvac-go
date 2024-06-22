@@ -1,4 +1,4 @@
-package zhonghongserial
+package serial
 
 import (
 	"io"
@@ -11,8 +11,8 @@ import (
 
 const (
 	// Default timeout
-	serialTimeout     = 5 * time.Second
-	serialIdleTimeout = 60 * time.Second
+	SerialTimeout     = 5 * time.Second
+	SerialIdleTimeout = 60 * time.Second
 )
 
 // serialPort has configuration and I/O controller.
@@ -32,36 +32,36 @@ type SerialPort struct {
 }
 
 func (mb *SerialPort) Connect() (err error) {
-	mb.mu.Lock()
-	defer mb.mu.Unlock()
+	mb.Mu.Lock()
+	defer mb.Mu.Unlock()
 
 	return mb.connect()
 }
 
 // connect connects to the serial port if it is not connected. Caller must hold the mutex.
 func (mb *SerialPort) connect() error {
-	if mb.port == nil {
-		port, err := serial.Open(mb.address, &mb.Mode)
+	if mb.Port == nil {
+		port, err := serial.Open(mb.Address, &mb.Mode)
 		if err != nil {
 			return err
 		}
-		mb.port = port
+		mb.Port = port
 	}
 	return nil
 }
 
 func (mb *SerialPort) Close() (err error) {
-	mb.mu.Lock()
-	defer mb.mu.Unlock()
+	mb.Mu.Lock()
+	defer mb.Mu.Unlock()
 
 	return mb.close()
 }
 
 // close closes the serial port if it is connected. Caller must hold the mutex.
-func (mb *SerialPort) Close() (err error) {
-	if mb.port != nil {
-		err = mb.port.Close()
-		mb.port = nil
+func (mb *SerialPort) close() (err error) {
+	if mb.Port != nil {
+		err = mb.Port.Close()
+		mb.Port = nil
 	}
 	return
 }
@@ -72,28 +72,28 @@ func (mb *SerialPort) Logf(format string, v ...interface{}) {
 	}
 }
 
-func (mb *serialPort) StartCloseTimer() {
+func (mb *SerialPort) StartCloseTimer() {
 	if mb.IdleTimeout <= 0 {
 		return
 	}
-	if mb.closeTimer == nil {
-		mb.closeTimer = time.AfterFunc(mb.IdleTimeout, mb.closeIdle)
+	if mb.CloseTimer == nil {
+		mb.CloseTimer = time.AfterFunc(mb.IdleTimeout, mb.CloseIdle)
 	} else {
-		mb.closeTimer.Reset(mb.IdleTimeout)
+		mb.CloseTimer.Reset(mb.IdleTimeout)
 	}
 }
 
 // closeIdle closes the connection if last activity is passed behind IdleTimeout.
-func (mb *serialPort) CloseIdle() {
-	mb.mu.Lock()
-	defer mb.mu.Unlock()
+func (mb *SerialPort) CloseIdle() {
+	mb.Mu.Lock()
+	defer mb.Mu.Unlock()
 
 	if mb.IdleTimeout <= 0 {
 		return
 	}
-	idle := time.Now().Sub(mb.lastActivity)
+	idle := time.Now().Sub(mb.LastActivity)
 	if idle >= mb.IdleTimeout {
-		mb.logf("Zhonghong: closing connection due to idle timeout: %v", idle)
+		mb.Logf("Zhonghong: closing connection due to idle timeout: %v", idle)
 		mb.close()
 	}
 	return

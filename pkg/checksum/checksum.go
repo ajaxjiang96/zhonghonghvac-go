@@ -1,5 +1,4 @@
-package zhonghongchecksum
-
+package checksum
 
 func Checksum(data []byte) int {
 	sum := 0

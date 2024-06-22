@@ -1,35 +1,35 @@
-package zhonghongbywireprotocol
+package b27protocol
 
 import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/zhonghong/zhonghongprotocol"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
 )
 
 // ClientHandler is the interface that groups the Packager and Transporter methods.
-type ClientHandlerByWire interface {
-	zhonghongprotocol.Packager
-	zhonghongprotocol.Transporter
+type ClientHandler interface {
+	protocol.Packager
+	protocol.Transporter
 }
 
-type clientbywire struct {
-	packager    zhonghongprotocol.Packager
-	transporter zhonghongprotocol.Transporter
+type client struct {
+	packager    protocol.Packager
+	transporter protocol.Transporter
 }
 
 // NewClient creates a new Zhonghonh client with given backend handler.
-func NewClientRemote(handler ClientHandlerByWire) ClientByWire {
-	return &clientbywire{packager: handler, transporter: handler}
+func NewClient(handler ClientHandler) Clientb27 {
+	return &client{packager: handler, transporter: handler}
 }
 
-func (mb *clientbywire) FunctionCheck(address []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) FunctionCheck(address []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeFunctionCheck,
-		FunctionCode: zhonghongprotocol.FuncCodeFunctionCheck,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeFunctionCheck,
+		FunctionCode: protocol.FuncCodeFunctionCheck,
 		CommandType:  "remote",
 		Address:      addressLen,
 	}
@@ -41,13 +41,13 @@ func (mb *clientbywire) FunctionCheck(address []uint16) (results *zhonghongproto
 	return resp, nil
 }
 
-func (mb *clientbywire) StatusCheck(address []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) StatusCheck(address []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeStatusCheck,
-		FunctionCode: zhonghongprotocol.FuncCodeStatusCheck,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeStatusCheck,
+		FunctionCode: protocol.FuncCodeStatusCheck,
 		CommandType:  "remote",
 		Address:      addressLen,
 	}
@@ -59,15 +59,15 @@ func (mb *clientbywire) StatusCheck(address []uint16) (results *zhonghongprotoco
 	return resp, nil
 }
 
-func (mb *clientbywire) ControlOn(address []uint16, commands []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) ControlOn(address []uint16, commands []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	newArr = PrependUint16(commands, ON)
+	newArr = PrependUint16(commands, protocol.ON)
 	commandsOn := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeOnOff,
-		FunctionCode: zhonghongprotocol.FuncCodeOnOff,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeOnOff,
+		FunctionCode: protocol.FuncCodeOnOff,
 		CommandType:  "remote",
 		Address:      addressLen,
 		Commands:     commandsOn,
@@ -80,15 +80,15 @@ func (mb *clientbywire) ControlOn(address []uint16, commands []uint16) (results 
 	return resp, nil
 }
 
-func (mb *clientbywire) ControlOff(address []uint16, commands []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) ControlOff(address []uint16, commands []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	newArr = PrependUint16(commands, OFF)
+	newArr = PrependUint16(commands, protocol.OFF)
 	commandsOff := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeOnOff,
-		FunctionCode: zhonghongprotocol.FuncCodeOnOff,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeOnOff,
+		FunctionCode: protocol.FuncCodeOnOff,
 		CommandType:  "remote",
 		Address:      addressLen,
 		Commands:     commandsOff,
@@ -101,13 +101,13 @@ func (mb *clientbywire) ControlOff(address []uint16, commands []uint16) (results
 	return resp, nil
 }
 
-func (mb *clientbywire) ErrorCheck(address []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) ErrorCheck(address []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeErrorCheck,
-		FunctionCode: zhonghongprotocol.FuncCodeErrorCheck,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeErrorCheck,
+		FunctionCode: protocol.FuncCodeErrorCheck,
 		CommandType:  "remote",
 		Address:      addressLen,
 	}
@@ -119,13 +119,13 @@ func (mb *clientbywire) ErrorCheck(address []uint16) (results *zhonghongprotocol
 	return resp, nil
 }
 
-func (mb *clientbywire) FreshAirCheck(address []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) FreshAirCheck(address []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeFreshAirCheck,
-		FunctionCode: zhonghongprotocol.FuncCodeFreshAirCheck,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeFreshAirCheck,
+		FunctionCode: protocol.FuncCodeFreshAirCheck,
 		CommandType:  "remote",
 		Address:      addressLen,
 	}
@@ -137,15 +137,15 @@ func (mb *clientbywire) FreshAirCheck(address []uint16) (results *zhonghongproto
 	return resp, nil
 }
 
-func (mb *clientbywire) FreshAirControlOn(address []uint16, commands []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) FreshAirControlOn(address []uint16, commands []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	newArr = PrependUint16(commands, ON)
+	newArr = PrependUint16(commands, protocol.ON)
 	commandsOn := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeOnOff,
-		FunctionCode: zhonghongprotocol.FuncCodeOnOff,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeOnOff,
+		FunctionCode: protocol.FuncCodeOnOff,
 		CommandType:  "remote",
 		Address:      addressLen,
 		Commands:     commandsOn,
@@ -158,15 +158,15 @@ func (mb *clientbywire) FreshAirControlOn(address []uint16, commands []uint16) (
 	return resp, nil
 }
 
-func (mb *clientbywire) FreshAirControlOff(address []uint16, commands []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) FreshAirControlOff(address []uint16, commands []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	newArr = PrependUint16(commands, OFF)
+	newArr = PrependUint16(commands, protocol.OFF)
 	commandsOff := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeOnOff,
-		FunctionCode: zhonghongprotocol.FuncCodeOnOff,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeOnOff,
+		FunctionCode: protocol.FuncCodeOnOff,
 		CommandType:  "remote",
 		Address:      addressLen,
 		Commands:     commandsOff,
@@ -179,13 +179,13 @@ func (mb *clientbywire) FreshAirControlOff(address []uint16, commands []uint16) 
 	return resp, nil
 }
 
-func (mb *clientbywire) FreshAirErrorCheck(address []uint16) (results *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) FreshAirErrorCheck(address []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
 	addressLen := dataBlockArray(newArr)
-	request := zhonghongprotocol.ProtocolDataUnit{
-		Header:       zhonghongprotocol.HeadCodeFreshAirErrorCheck,
-		FunctionCode: zhonghongprotocol.FuncCodeFreshAirErrorCheck,
+	request := protocol.ProtocolDataUnit{
+		Header:       protocol.HeadCodeFreshAirErrorCheck,
+		FunctionCode: protocol.FuncCodeFreshAirErrorCheck,
 		CommandType:  "remote",
 		Address:      addressLen,
 	}
@@ -197,7 +197,7 @@ func (mb *clientbywire) FreshAirErrorCheck(address []uint16) (results *zhonghong
 	return resp, nil
 }
 
-func (mb *clientbywire) send(request *zhonghongprotocol.ProtocolDataUnit) (response *zhonghongprotocol.ProtocolDataUnit, err error) {
+func (mb *client) send(request *protocol.ProtocolDataUnit) (response *protocol.ProtocolDataUnit, err error) {
 	aduRequest, err := mb.packager.Encode(request)
 	if err != nil {
 		return
@@ -209,7 +209,7 @@ func (mb *clientbywire) send(request *zhonghongprotocol.ProtocolDataUnit) (respo
 	if err = mb.packager.Verify(aduRequest, aduResponse); err != nil {
 		return
 	}
-	response, err = mb.packager.DecodeRemote(aduResponse)
+	response, err = mb.packager.Decode(aduResponse)
 	if err != nil {
 		return
 	}
@@ -248,8 +248,8 @@ func PrependUint16(slice []uint16, element uint16) []uint16 {
 	return newSlice
 }
 
-func responseError(response *zhonghongprotocol.ProtocolDataUnit) error {
-	mbError := &zhonghongprotocol.ZhonghongError{FunctionCode: response.FunctionCode}
+func responseError(response *protocol.ProtocolDataUnit) error {
+	mbError := &protocol.ZhonghongError{FunctionCode: response.FunctionCode}
 	if response.Data != nil && len(response.Data) > 0 {
 		mbError.ExceptionCode = response.Data[0]
 	}

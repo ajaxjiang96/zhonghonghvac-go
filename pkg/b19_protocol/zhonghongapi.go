@@ -1,4 +1,4 @@
-package zhonghonggatewayprotocol
+package b19protocol
 
 type Client interface {
 	// Bit access

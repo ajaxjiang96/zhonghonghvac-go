@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package zhonghonggatewayprotocol_test
+package b19protocol_test
 
 import (
 	"encoding/hex"
