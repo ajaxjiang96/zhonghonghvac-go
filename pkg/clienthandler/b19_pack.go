@@ -8,7 +8,7 @@ import (
 )
 
 // rtuPackager implements Packager interface.
-type RTUPackager struct {
+type B19Packager struct {
 	// SlaveId byte
 }
 
@@ -18,7 +18,7 @@ type RTUPackager struct {
 //	Function        : 1 byte
 //	Data            : 0 up to 252 bytes
 //	CRC             : 2 byte
-func (mb *RTUPackager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err error) {
+func (mb *B19Packager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err error) {
 	// todo check header to find length
 	length := len(pdu.Data) + 3
 	if length > rtuMaxSize {
@@ -38,7 +38,7 @@ func (mb *RTUPackager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err e
 }
 
 // Verify verifies response length and slave id.
-func (mb *RTUPackager) Verify(aduRequest []byte, aduResponse []byte) (err error) {
+func (mb *B19Packager) Verify(aduRequest []byte, aduResponse []byte) (err error) {
 	length := len(aduResponse)
 	// Minimum size (including address, function and CRC)
 	if length < rtuMinSize {
@@ -54,13 +54,13 @@ func (mb *RTUPackager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 }
 
 // Decode extracts PDU from RTU frame and verify CRC.
-func (mb *RTUPackager) Decode(adu []byte) (pdu *protocol.ProtocolDataUnit, err error) {
+func (mb *B19Packager) Decode(adu []byte) (pdu *protocol.ProtocolDataUnit, err error) {
 	length := len(adu)
 	receivedChecksum := uint8(adu[len(adu)-1])
 	computedChecksum := client.CalculateByteSum(adu[0 : len(adu)-1])
 
 	if computedChecksum != receivedChecksum {
-		err = fmt.Errorf("zonghongprotocol: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
+		err = fmt.Errorf("b19-packer: response checksum '%v' does not match expected '%v'", receivedChecksum, computedChecksum)
 		return
 	}
 	// Function code & data

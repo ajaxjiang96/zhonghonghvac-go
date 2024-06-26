@@ -15,7 +15,7 @@ const (
 )
 
 type RTUClientHandler struct {
-	RTUPackager
+	B19Packager
 	rtuSerialTransporter
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 type TCPClientHandler struct {
-	RTUPackager
+	B19Packager
 	TCPTransporter
 }
 
@@ -22,7 +22,7 @@ func NewTCPClientHandler(address string) *TCPClientHandler {
 			conn:    conn,
 			timeout: 5 * time.Second,
 		},
-		RTUPackager: RTUPackager{},
+		B19Packager: B19Packager{},
 	}
 }
 
