@@ -1,85 +1,40 @@
 package protocol
 
-import (
-	"fmt"
-)
-
+// List of header and function codes for the protocol
 const (
 	// Bit access
-	FuncCodeReadGateway        = 0xB0
-	HeadCodeReadGateway        = 0xFF
-	HeadCodeGateway            = 0xDD
-	FuncCodeGatewayOnOff       = 0x31
-	FuncCodeGatewayTemp        = 0x32
-	FuncCodeGatewayControl     = 0x33
-	FuncCodeGatewayWindSpeed   = 0x34
-	FuncCodeGatewayWindDir     = 0x71
-	FuncCodeGatewayNewAirOnOff = 0x72
-	FuncCodeGatewayNewAirMode  = 0x73
-	FuncCodeGatewayNewAirSpeed = 0x74
-	FuncCodeFunctionCheck      = 0x01
-	HeadCodeFunctionCheck      = 0xDD
-	FuncCodeStatusCheck        = 0x02
-	HeadCodeStatusCheck        = 0xDD
-	FuncCodeOnOff              = 0x03
-	HeadCodeOnOff              = 0xDD
-	FuncCodeErrorCheck         = 0x04
-	HeadCodeErrorCheck         = 0xDD
-	FuncCodeFreshAirCheck      = 0x12
-	HeadCodeFreshAirCheck      = 0xDD
-	FuncCodeFreshAirControl    = 0x13
-	HeadCodeFreshAirControl    = 0xDD
-	FuncCodeFreshAirErrorCheck = 0x14
-	HeadCodeFreshAirErrorCheck = 0xDD
-	ON                         = 0x01
-	OFF                        = 0x00
+	FuncCodeReadGateway                        = 0xB0
+	HeadCodeReadGateway                        = 0xFF
+	FuncCodeEditGateway                        = 0xB1
+	HeadCodeGateway                            = 0xDD
+	FuncCodeGatewayOnOff                       = 0x31
+	FuncCodeGatewayTemp                        = 0x32
+	FuncCodeGatewayControl                     = 0x33
+	FuncCodeGatewayWindSpeed                   = 0x34
+	FuncCodeGatewayWindDir                     = 0x71
+	FuncCodeGatewayNewAirOnOff                 = 0x72
+	FuncCodeGatewayNewAirMode                  = 0x73
+	FuncCodeGatewayNewAirSpeed                 = 0x74
+	FuncCodeGatewayFloorHeatingOnOff           = 0x81
+	FuncCodeGatewayFloorHeatingTemp            = 0x82
+	FuncCodeGatewayFloorHeatingControl         = 0x83
+	FuncCodeGatewayFloorHeatingAntiFreezeOnOff = 0x84
+	FuncCodePerformanceCheck                   = 0x01
+	HeadCode                                   = 0xDD
+	FuncCodeStatusCheck                        = 0x02
+	FuncCodeOnOff                              = 0x03
+	FuncCodeErrorCheck                         = 0x04
+	FuncCodeFreshAirStatus                     = 0x11
+	FuncCodeFreshAirPerformance                = 0x12
+	FuncCodeFreshAirControl                    = 0x13
+	FuncCodeFreshAirErrorCheck                 = 0x14
+	FuncCodeFloorHeatingPerformance            = 0x21
+	FuncCodeFloorHeatingStatusCheck            = 0x22
+	FloorHeatingOnOff                          = 0x23
+	FuncCodeFloorHeatingControlCheck           = 0x24
+	ON                                         = 0x01
+	OFF                                        = 0x00
 )
-
-const (
-	ExceptionCodeIllegalFunction                    = 1
-	ExceptionCodeIllegalDataAddress                 = 2
-	ExceptionCodeIllegalDataValue                   = 3
-	ExceptionCodeServerDeviceFailure                = 4
-	ExceptionCodeAcknowledge                        = 5
-	ExceptionCodeServerDeviceBusy                   = 6
-	ExceptionCodeMemoryParityError                  = 8
-	ExceptionCodeGatewayPathUnavailable             = 10
-	ExceptionCodeGatewayTargetDeviceFailedToRespond = 11
-)
-
-// ZhonghongError implements error interface.
-type ZhonghongError struct {
-	FunctionCode  byte
-	ExceptionCode byte
-}
-
-// Error converts known Zhonghong exception code to error message.
-func (e *ZhonghongError) Error() string {
-	var name string
-	switch e.ExceptionCode {
-	case ExceptionCodeIllegalFunction:
-		name = "illegal function"
-	case ExceptionCodeIllegalDataAddress:
-		name = "illegal data address"
-	case ExceptionCodeIllegalDataValue:
-		name = "illegal data value"
-	case ExceptionCodeServerDeviceFailure:
-		name = "server device failure"
-	case ExceptionCodeAcknowledge:
-		name = "acknowledge"
-	case ExceptionCodeServerDeviceBusy:
-		name = "server device busy"
-	case ExceptionCodeMemoryParityError:
-		name = "memory parity error"
-	case ExceptionCodeGatewayPathUnavailable:
-		name = "gateway path unavailable"
-	case ExceptionCodeGatewayTargetDeviceFailedToRespond:
-		name = "gateway target device failed to respond"
-	default:
-		name = "unknown"
-	}
-	return fmt.Sprintf("Zhonghong: exception '%v' (%s), function '%v'", e.ExceptionCode, name, e.FunctionCode)
-}
 
 // ProtocolDataUnit (PDU) is independent of underlying communication layers.
 type ProtocolDataUnit struct {
@@ -95,7 +50,6 @@ type ProtocolDataUnit struct {
 type Packager interface {
 	Encode(pdu *ProtocolDataUnit) (adu []byte, err error)
 	Decode(adu []byte) (pdu *ProtocolDataUnit, err error)
-	// DecodeRemote(adu []byte) (pdu *ProtocolDataUnit, err error)
 	Verify(aduRequest []byte, aduResponse []byte) (err error)
 }
 
