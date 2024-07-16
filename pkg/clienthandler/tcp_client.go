@@ -18,10 +18,10 @@ type TCPClientHandler struct {
 }
 
 // NewTCPClientHandler allocates and initializes a TCPClientHandler.
-func NewTCPClientHandler(address string) *TCPClientHandler {
+func NewTCPClientHandler(address string) (*TCPClientHandler, error) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &TCPClientHandler{
@@ -30,7 +30,7 @@ func NewTCPClientHandler(address string) *TCPClientHandler {
 			timeout: 5 * time.Second,
 		},
 		B19Packager: B19Packager{},
-	}
+	}, nil
 }
 
 // Sends request via tcp connection and retrieves the response.

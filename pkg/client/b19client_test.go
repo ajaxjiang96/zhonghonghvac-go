@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package client_test
 
 import (
@@ -35,12 +32,12 @@ func TestB19ReadGatewayByRTU(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-
 	assert.Equal(t, "ffff900c6ccbd7e1f965b5bea842e3b95c6000c0a801c9ffffff00c0a80101c0a801c815be270f01258002", hex.EncodeToString(rs.Data))
 }
 
 func TestB19ReadGatewayByTCP(t *testing.T) {
-	handler := clienthandler.NewTCPClientHandler("10.1.0.254:4196")
+	handler, err := clienthandler.NewTCPClientHandler("192.168.1.220:4196")
+	assert.Nil(t, err)
 	client := client.NewB19Client(handler)
 
 	rs, err := client.ReadGateway()
