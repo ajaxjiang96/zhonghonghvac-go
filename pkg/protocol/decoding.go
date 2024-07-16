@@ -42,7 +42,7 @@ func ParseReadGateway(pdu ProtocolDataUnit) (gatewayInfo GatewayInfo, err error)
 	validation := pdu.Data[42]
 
 	return GatewayInfo{
-		DeviceId:   string(deviceId),
+		DeviceId:   fmt.Sprintf("%x", deviceId),
 		Dhcp:       dhcp == 0x01,
 		IpAddr:     bytesToIP(ipAddr),
 		IpMask:     bytesToIP(ipMask),
