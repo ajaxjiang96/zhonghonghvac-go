@@ -14,7 +14,7 @@ type b19client struct {
 }
 
 // NewClient creates a new Zhonghong client with given backend handler.
-func NewB19Client(handler api.ClientHandler) api.Client {
+func NewB19Client(handler api.ClientHandler) *b19client {
 	return &b19client{packager: handler, transporter: handler}
 }
 
@@ -254,7 +254,7 @@ func (mb *b19client) FloorHeatingStatus(data []uint16) (results *protocol.Protoc
 	return nil, fmt.Errorf("zhonghong-b19 client: does not support following protocol")
 }
 
-// B27Client sends the specified control command to the gateway
+// B19 Client sends the specified control command to the gateway
 func (mb *b19client) send(request *protocol.ProtocolDataUnit) (response *protocol.ProtocolDataUnit, err error) {
 	aduRequest, err := mb.packager.Encode(request)
 	if err != nil {
