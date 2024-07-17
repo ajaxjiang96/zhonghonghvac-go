@@ -27,7 +27,7 @@ func (mb *B19Packager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err e
 	adu = make([]byte, length)
 
 	adu[0] = pdu.Header
-	adu[1] = pdu.FunctionCode
+	adu[1] = byte(pdu.FunctionCode)
 	copy(adu[2:], pdu.Data)
 
 	checksum := protocol.CalculateByteSum(adu[0 : length-1])
@@ -49,7 +49,7 @@ func (mb *B19Packager) Decode(adu []byte) (pdu *protocol.ProtocolDataUnit, err e
 	// Function code & data
 	pdu = &protocol.ProtocolDataUnit{}
 	pdu.Header = adu[0]
-	pdu.FunctionCode = adu[1]
+	pdu.FunctionCode = protocol.FuncCode(adu[1])
 	pdu.Data = adu[2 : length-1]
 	return
 }
@@ -59,17 +59,17 @@ func (mb *B19Packager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 	length := len(aduResponse)
 	// Minimum size (including address, function and CRC)
 	if length < rtuMinSize {
-		err = fmt.Errorf("zonghongprotocol: response length '%v' does not meet minimum '%v'", length, rtuMinSize)
+		err = fmt.Errorf("zhonghongprotocol: response length '%v' does not meet minimum '%v'", length, rtuMinSize)
 		return
 	}
 	// Header must match
 	if aduResponse[0] != aduRequest[0] {
-		err = fmt.Errorf("zonghongprotocol: response header '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
+		err = fmt.Errorf("zhonghongprotocol: response header '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
 		return
 	}
 	// Function code must match
 	if aduResponse[1] != aduRequest[1] {
-		err = fmt.Errorf("zonghongprotocol: response function '%v' does not match request '%v'", aduResponse[1], aduRequest[1])
+		err = fmt.Errorf("zhonghongprotocol: response function '%v' does not match request '%v'", aduResponse[1], aduRequest[1])
 		return
 	}
 	return

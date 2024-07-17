@@ -56,7 +56,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 			}
 		}
 	} else {
-		err = fmt.Errorf("zonghongprotocol: response function code is invalid")
+		err = fmt.Errorf("zhonghongprotocol: response function code is invalid")
 		return
 	}
 
@@ -65,10 +65,10 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	}
 	aduResponse = data[:n]
 	if len(aduResponse) != bytesToRead {
-		err = fmt.Errorf("zonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
+		err = fmt.Errorf("zhonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
 		return
 	}
-	mb.SerialPort.Logf("zonghongprotocol: received % x\n", aduResponse)
+	mb.SerialPort.Logf("zhonghongprotocol: received % x\n", aduResponse)
 	return
 }
 
@@ -102,7 +102,7 @@ func (mb *rtuSerialTransporter) calculateDelay(chars int) time.Duration {
 // CalculateResponseLength calculates the expected number of bytes in a response.
 func calculateResponseLength(adu []byte) int {
 	length := rtuMinSize
-	switch adu[1] {
+	switch protocol.FuncCode(adu[1]) {
 	case protocol.FuncCodeReadGateway:
 		length = 46
 
@@ -131,7 +131,7 @@ func calculateResponseLength(adu []byte) int {
 		length = 7
 	default:
 	}
-	switch adu[4] {
+	switch protocol.FuncCode(adu[4]) {
 	case protocol.FuncCodeReadGateway:
 		length = 46
 
