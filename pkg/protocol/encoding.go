@@ -68,3 +68,17 @@ func OnOffEncode(data []uint16, funccode FuncCode, OnOff uint16) ProtocolDataUni
 	}
 	return request
 }
+
+func BytesToUint16Slice(b []byte) []uint16 {
+	if len(b)%2 != 0 {
+		panic("byte slice length must be a multiple of 2")
+	}
+
+	uint16Slice := make([]uint16, len(b)/2)
+
+	for i := 0; i < len(uint16Slice); i++ {
+		uint16Slice[i] = binary.LittleEndian.Uint16(b[i*2:])
+	}
+
+	return uint16Slice
+}

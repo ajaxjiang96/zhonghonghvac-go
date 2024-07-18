@@ -10,6 +10,7 @@ type Client interface {
 	On(data []uint16) (results *protocol.ProtocolDataUnit, err error)
 	Off(data []uint16) (results *protocol.ProtocolDataUnit, err error)
 	TempControl(data []uint16) (results *protocol.ProtocolDataUnit, err error)
+	ModeControl(data []uint16) (results *protocol.ProtocolDataUnit, err error)
 	Control(data []uint16) (results *protocol.ProtocolDataUnit, err error)
 	WindSpeedControl(data []uint16) (results *protocol.ProtocolDataUnit, err error)
 	WindDirControl(data []uint16) (results *protocol.ProtocolDataUnit, err error)

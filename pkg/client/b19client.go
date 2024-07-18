@@ -224,6 +224,10 @@ func (mb *b19client) ErrorCheck(data []uint16) (results *protocol.ProtocolDataUn
 	return nil, fmt.Errorf("zhonghong-b19 client: does not support following protocol")
 }
 
+func (mb *b19client) ModeControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+	return nil, fmt.Errorf("zhonghong-b19 client: does not support following protocol")
+}
+
 func (mb *b19client) PerformanceCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b19 client: does not support following protocol")
 }
