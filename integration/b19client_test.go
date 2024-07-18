@@ -39,7 +39,7 @@ func TestB19ReadGatewayByRTU(t *testing.T) {
 }
 
 func TestB19ReadGatewayByTCP(t *testing.T) {
-	handler, err := clienthandler.NewTCPClientHandler("192.168.1.220:4196")
+	handler, err := clienthandler.NewTCPClientHandler("192.168.1.220:4196", &clienthandler.B19Packager{})
 	assert.Nil(t, err)
 	client := client.NewB19Client(handler)
 

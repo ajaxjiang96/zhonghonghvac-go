@@ -29,7 +29,7 @@ func PrependUint16(slice []uint16, element uint16) []uint16 {
 	return newSlice
 }
 
-func NormalEncode(data []uint16, funccode byte) ProtocolDataUnit {
+func NormalEncode(data []uint16, funccode FuncCode) ProtocolDataUnit {
 	len_data := uint16(len(data) + 4)
 	newArr := PrependUint16(data, len_data)
 	addressLen := dataBlockArray(newArr)
@@ -38,11 +38,21 @@ func NormalEncode(data []uint16, funccode byte) ProtocolDataUnit {
 		FunctionCode: funccode,
 		Address:      addressLen,
 	}
+	return request
+}
+
+func B27NormalEncode(addr []byte, funcCode FuncCode, data ...byte) ProtocolDataUnit {
+	request := ProtocolDataUnit{
+		Header:       HeadCode,
+		FunctionCode: funcCode,
+		Address:      addr,
+		Data:         data,
+	}
 
 	return request
 }
 
-func OnOffEncode(data []uint16, funccode byte, OnOff uint16) ProtocolDataUnit {
+func OnOffEncode(data []uint16, funccode FuncCode, OnOff uint16) ProtocolDataUnit {
 	address := data[:2]
 	len_data := uint16(len(address) + 4)
 	newArr := PrependUint16(address, len_data)
@@ -52,7 +62,7 @@ func OnOffEncode(data []uint16, funccode byte, OnOff uint16) ProtocolDataUnit {
 	commandsOff := dataBlockArray(newArr)
 	request := ProtocolDataUnit{
 		Header:       HeadCode,
-		FunctionCode: FloorHeatingOnOff,
+		FunctionCode: FuncCodeFloorHeatingOnOff,
 		Address:      addressLen,
 		Commands:     commandsOff,
 	}

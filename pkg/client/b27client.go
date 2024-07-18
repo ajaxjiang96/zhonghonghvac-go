@@ -3,7 +3,6 @@ package client
 import (
 	"fmt"
 
-	"github.com/Yangsta911/zhonghonghvac-go/pkg/api"
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
 )
 
@@ -14,19 +13,19 @@ type ClientHandler interface {
 }
 
 // 中弘线控器 B27（小超人）
-type b27client struct {
+type B27client struct {
 	packager    protocol.Packager
 	transporter protocol.Transporter
 }
 
 // NewB27Client creates a new Zhonghong client with given backend handler.
-func NewB27Client(handler ClientHandler) api.Client {
-	return &b27client{packager: handler, transporter: handler}
+func NewB27Client(handler ClientHandler) *B27client {
+	return &B27client{packager: handler, transporter: handler}
 }
 
 // PerformanceCheck returns performances statistics of the specified HVAC device
-func (mb *b27client) PerformanceCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodePerformanceCheck)
+func (mb *B27client) PerformanceCheck(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodePerformanceCheck, data...)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -36,8 +35,8 @@ func (mb *b27client) PerformanceCheck(data []uint16) (results *protocol.Protocol
 }
 
 // StatusCheck returns status of the specified HVAC device
-func (mb *b27client) StatusCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeStatusCheck)
+func (mb *B27client) StatusCheck(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeStatusCheck)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -47,8 +46,8 @@ func (mb *b27client) StatusCheck(data []uint16) (results *protocol.ProtocolDataU
 }
 
 // On turns on specified HVAC device
-func (mb *b27client) On(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FuncCodeOnOff, protocol.ON)
+func (mb *B27client) On(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeOnOff, protocol.ON)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -58,8 +57,8 @@ func (mb *b27client) On(data []uint16) (results *protocol.ProtocolDataUnit, err 
 }
 
 // Off turns off specified HVAC device
-func (mb *b27client) Off(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FuncCodeOnOff, protocol.OFF)
+func (mb *B27client) Off(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeOnOff, protocol.OFF)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -69,8 +68,8 @@ func (mb *b27client) Off(data []uint16) (results *protocol.ProtocolDataUnit, err
 }
 
 // ErrorCheck returns the error status code of the specified HVAC device
-func (mb *b27client) ErrorCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeErrorCheck)
+func (mb *B27client) ErrorCheck(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeErrorCheck, data...)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -80,8 +79,8 @@ func (mb *b27client) ErrorCheck(data []uint16) (results *protocol.ProtocolDataUn
 }
 
 // FreshAirPerformance returns the performance statistics of the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirPerformance(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFreshAirPerformance)
+func (mb *B27client) FreshAirPerformance(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeErrorCheck, data...)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -91,8 +90,9 @@ func (mb *b27client) FreshAirPerformance(data []uint16) (results *protocol.Proto
 }
 
 // FreshAirStatus returns the status of the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirStatus(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFreshAirStatus)
+func (mb *B27client) FreshAirStatus(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFreshAirStatus, data...)
+
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -102,8 +102,8 @@ func (mb *b27client) FreshAirStatus(data []uint16) (results *protocol.ProtocolDa
 }
 
 // FreshAirModeControl selects the mode of the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirModeControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFreshAirControl)
+func (mb *B27client) FreshAirModeControl(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFreshAirControl, data...)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -113,8 +113,8 @@ func (mb *b27client) FreshAirModeControl(data []uint16) (results *protocol.Proto
 }
 
 // FreshAirOn turns on the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirOn(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FuncCodeFreshAirControl, protocol.ON)
+func (mb *B27client) FreshAirOn(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFreshAirControl, protocol.ON)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -124,8 +124,8 @@ func (mb *b27client) FreshAirOn(data []uint16) (results *protocol.ProtocolDataUn
 }
 
 // FreshAirOn turns off the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirOff(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FuncCodeFreshAirControl, protocol.OFF)
+func (mb *B27client) FreshAirOff(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFreshAirControl, protocol.OFF)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -135,8 +135,8 @@ func (mb *b27client) FreshAirOff(data []uint16) (results *protocol.ProtocolDataU
 }
 
 // FreshAirErrorCheck returns the error status of the specified Fresh Air ventilation device
-func (mb *b27client) FreshAirErrorCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFreshAirErrorCheck)
+func (mb *B27client) FreshAirErrorCheck(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFreshAirErrorCheck)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -146,8 +146,8 @@ func (mb *b27client) FreshAirErrorCheck(data []uint16) (results *protocol.Protoc
 }
 
 // FloorHeatingPerformance returns the performance statistics of the specified Floor Heating device
-func (mb *b27client) FloorHeatingPerformance(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFloorHeatingPerformance)
+func (mb *B27client) FloorHeatingPerformance(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFloorHeatingPerformance)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -157,8 +157,8 @@ func (mb *b27client) FloorHeatingPerformance(data []uint16) (results *protocol.P
 }
 
 // FloorHeatingStatus returns the status of the specified Floor Heating device
-func (mb *b27client) FloorHeatingStatus(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.NormalEncode(data, protocol.FuncCodeFloorHeatingStatusCheck)
+func (mb *B27client) FloorHeatingStatus(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFloorHeatingStatusCheck)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -168,8 +168,8 @@ func (mb *b27client) FloorHeatingStatus(data []uint16) (results *protocol.Protoc
 }
 
 // FloorHeatingOn turns on the specified Floor Heating device
-func (mb *b27client) FloorHeatingOn(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FloorHeatingOnOff, protocol.ON)
+func (mb *B27client) FloorHeatingOn(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFloorHeatingOnOff, protocol.ON)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -179,8 +179,8 @@ func (mb *b27client) FloorHeatingOn(data []uint16) (results *protocol.ProtocolDa
 }
 
 // FloorHeatingOff turns off the specified Floor Heating device
-func (mb *b27client) FloorHeatingOff(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	request := protocol.OnOffEncode(data, protocol.FloorHeatingOnOff, protocol.OFF)
+func (mb *B27client) FloorHeatingOff(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeFloorHeatingOnOff, protocol.OFF)
 	resp, err := mb.send(&request)
 	if err != nil {
 		return nil, err
@@ -189,52 +189,58 @@ func (mb *b27client) FloorHeatingOff(data []uint16) (results *protocol.ProtocolD
 	return resp, nil
 }
 
-func (mb *b27client) ReadGateway() (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) ReadGateway() (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) Control(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) Control(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeOnOff, data...)
+	resp, err := mb.send(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (mb *B27client) EditGateway(addr byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) EditGateway(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) FreshAirSpeedControl(addr byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) FreshAirSpeedControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) TempControl(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) TempControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) WindDirControl(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) WindDirControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) WindSpeedControl(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) WindSpeedControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) FloorHeatingAntiFreezeOn(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) FloorHeatingAntiFreezeOn(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) FloorHeatingAntiFreezeOff(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) FloorHeatingAntiFreezeOff(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) FloorHeatingControl(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *b27client) FloorHeatingControl(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
-	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
-}
-
-func (mb *b27client) FloorHeatingTemp(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) FloorHeatingTemp(data []byte) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
 // B27Client sends the specified control command to the specified device
-func (mb *b27client) send(request *protocol.ProtocolDataUnit) (response *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) send(request *protocol.ProtocolDataUnit) (response *protocol.ProtocolDataUnit, err error) {
 	aduRequest, err := mb.packager.Encode(request)
 	if err != nil {
 		return

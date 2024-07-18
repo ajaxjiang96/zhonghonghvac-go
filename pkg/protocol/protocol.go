@@ -1,45 +1,52 @@
 package protocol
 
 // List of header and function codes for the protocol
+
+type FuncCode byte
+
 const (
 	// Bit access
-	FuncCodeReadGateway                        = 0xB0
-	HeadCodeReadGateway                        = 0xFF
-	FuncCodeEditGateway                        = 0xB1
-	HeadCodeGateway                            = 0xDD
-	FuncCodeGatewayOnOff                       = 0x31
-	FuncCodeGatewayTemp                        = 0x32
-	FuncCodeGatewayControl                     = 0x33
-	FuncCodeGatewayWindSpeed                   = 0x34
-	FuncCodeGatewayWindDir                     = 0x71
-	FuncCodeGatewayNewAirOnOff                 = 0x72
-	FuncCodeGatewayNewAirMode                  = 0x73
-	FuncCodeGatewayNewAirSpeed                 = 0x74
-	FuncCodeGatewayFloorHeatingOnOff           = 0x81
-	FuncCodeGatewayFloorHeatingTemp            = 0x82
-	FuncCodeGatewayFloorHeatingControl         = 0x83
-	FuncCodeGatewayFloorHeatingAntiFreezeOnOff = 0x84
-	FuncCodePerformanceCheck                   = 0x01
-	HeadCode                                   = 0xDD
-	FuncCodeStatusCheck                        = 0x02
-	FuncCodeOnOff                              = 0x03
-	FuncCodeErrorCheck                         = 0x04
-	FuncCodeFreshAirStatus                     = 0x11
-	FuncCodeFreshAirPerformance                = 0x12
-	FuncCodeFreshAirControl                    = 0x13
-	FuncCodeFreshAirErrorCheck                 = 0x14
-	FuncCodeFloorHeatingPerformance            = 0x21
-	FuncCodeFloorHeatingStatusCheck            = 0x22
-	FloorHeatingOnOff                          = 0x23
-	FuncCodeFloorHeatingControlCheck           = 0x24
-	ON                                         = 0x01
-	OFF                                        = 0x00
+	FuncCodeReadGateway                        FuncCode = 0xB0
+	FuncCodeEditGateway                        FuncCode = 0xB1
+	FuncCodeGatewayOnOff                       FuncCode = 0x31
+	FuncCodeGatewayTemp                        FuncCode = 0x32
+	FuncCodeGatewayControl                     FuncCode = 0x33
+	FuncCodeGatewayWindSpeed                   FuncCode = 0x34
+	FuncCodeACStatus                           FuncCode = 0x50
+	FuncCodeGatewayWindDir                     FuncCode = 0x71
+	FuncCodeGatewayNewAirOnOff                 FuncCode = 0x72
+	FuncCodeGatewayNewAirMode                  FuncCode = 0x73
+	FuncCodeGatewayNewAirSpeed                 FuncCode = 0x74
+	FuncCodeGatewayFloorHeatingOnOff           FuncCode = 0x81
+	FuncCodeGatewayFloorHeatingTemp            FuncCode = 0x82
+	FuncCodeGatewayFloorHeatingControl         FuncCode = 0x83
+	FuncCodeGatewayFloorHeatingAntiFreezeOnOff FuncCode = 0x84
+	FuncCodePerformanceCheck                   FuncCode = 0x01
+	FuncCodeStatusCheck                        FuncCode = 0x02
+	FuncCodeOnOff                              FuncCode = 0x03
+	FuncCodeErrorCheck                         FuncCode = 0x04
+	FuncCodeFreshAirStatus                     FuncCode = 0x11
+	FuncCodeFreshAirPerformance                FuncCode = 0x12
+	FuncCodeFreshAirControl                    FuncCode = 0x13
+	FuncCodeFreshAirErrorCheck                 FuncCode = 0x14
+	FuncCodeFloorHeatingPerformance            FuncCode = 0x21
+	FuncCodeFloorHeatingStatusCheck            FuncCode = 0x22
+	FuncCodeFloorHeatingControlCheck           FuncCode = 0x24
+	FuncCodeFloorHeatingOnOff                  FuncCode = 0x23
+)
+
+const (
+	HeadCode            byte = 0xDD
+	HeadCodeGateway     byte = 0xDD
+	HeadCodeReadGateway byte = 0xFF
+	ON                  byte = 0x01
+	OFF                 byte = 0x00
 )
 
 // ProtocolDataUnit (PDU) is independent of underlying communication layers.
 type ProtocolDataUnit struct {
 	Header       byte
-	FunctionCode byte
+	FunctionCode FuncCode
 	CommandType  string
 	Data         []byte
 	Address      []byte

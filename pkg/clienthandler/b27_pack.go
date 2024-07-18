@@ -20,7 +20,7 @@ type B27Packager struct {
 //	Data            : 0 up to 252 bytes
 //	Checksum        : 1 byte
 func (p *B27Packager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err error) {
-	length := 5 + len(pdu.Commands) + 1
+	length := 5 + len(pdu.Data) + 1
 
 	if length > rtuMaxSize {
 		err = fmt.Errorf("b27-packager: length of data '%v' must not be bigger than '%v'", length, rtuMaxSize)
@@ -30,9 +30,13 @@ func (p *B27Packager) Encode(pdu *protocol.ProtocolDataUnit) (adu []byte, err er
 
 	adu[0] = pdu.Header
 	adu[1] = byte(length)
-	copy(adu[2:4], pdu.Address)
-	adu[4] = pdu.FunctionCode
-	copy(adu[5:5+len(pdu.Commands)], pdu.Commands)
+	if len(pdu.Address) == 1 {
+		copy(adu[2:4], []byte{0xff, pdu.Address[0]})
+	} else {
+		copy(adu[2:4], pdu.Address)
+	}
+	adu[4] = byte(pdu.FunctionCode)
+	copy(adu[5:5+len(pdu.Data)], pdu.Data)
 	adu[length-1] = protocol.CalculateByteSum(adu[0 : length-1])
 	return
 }
@@ -52,27 +56,28 @@ func (p *B27Packager) Decode(adu []byte) (pdu *protocol.ProtocolDataUnit, err er
 	pdu = &protocol.ProtocolDataUnit{}
 	pdu.Header = adu[0]
 	copy(pdu.Address, adu[2:4])
-	pdu.FunctionCode = adu[4]
+	pdu.FunctionCode = protocol.FuncCode(adu[4])
 	pdu.Data = adu[5 : length-1]
 	return
 }
 
 // Verify verifies response length and header code.
 func (p *B27Packager) Verify(aduRequest []byte, aduResponse []byte) error {
-	if aduResponse[1] != aduRequest[1] {
-		err := fmt.Errorf("zonghongprotocol: response header '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
-		return err
-	}
+	// if aduResponse[1] != aduRequest[1] {
+	// 	err := fmt.Errorf("zhonghongprotocol: response header '%v' does not match request '%v'", aduResponse[0], aduRequest[0])
+	// 	return err
+	// }
 
-	if aduResponse[4] != aduRequest[4] {
-		err := fmt.Errorf("zonghongprotocol: response function code '%v' does not match request '%v'", aduResponse[4], aduRequest[4])
-		return err
-	}
+	// if aduResponse[4] != aduRequest[4] {
+	// 	err := fmt.Errorf("zhonghongprotocol: response function code '%v' does not match request '%v'", aduResponse[4], aduRequest[4])
+	// 	return err
+	// }
 	// get last byte
-	reqSum := aduRequest[len(aduRequest)-1]
+	// reqSum := aduRequest[len(aduRequest)-1]
 	respSum := aduResponse[len(aduResponse)-1]
 
-	if reqSum != respSum {
+	checksum := protocol.CalculateByteSum(aduResponse[0 : len(aduResponse)-1])
+	if checksum != respSum {
 		return fmt.Errorf("b27-packager: checksum error")
 	}
 
