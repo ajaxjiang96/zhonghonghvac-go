@@ -46,7 +46,7 @@ func (mb *B27client) StatusCheck(addr byte) (results *protocol.ProtocolDataUnit,
 }
 
 // On turns on specified HVAC device
-func (mb *B27client) On(addr byte) (results *protocol.ProtocolDataUnit, err error) {
+func (mb *B27client) On(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
 	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeOnOff, protocol.ON)
 	resp, err := mb.send(&request)
 	if err != nil {
@@ -193,8 +193,14 @@ func (mb *B27client) ReadGateway() (results *protocol.ProtocolDataUnit, err erro
 	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
 }
 
-func (mb *B27client) Control(addr byte) (results *protocol.ProtocolDataUnit, err error) {
-	return nil, fmt.Errorf("zhonghong-b27 client: does not support following protocol")
+func (mb *B27client) Control(addr byte, data ...byte) (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B27NormalEncode([]byte{addr}, protocol.FuncCodeOnOff, data...)
+	resp, err := mb.send(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (mb *B27client) EditGateway(addr byte) (results *protocol.ProtocolDataUnit, err error) {

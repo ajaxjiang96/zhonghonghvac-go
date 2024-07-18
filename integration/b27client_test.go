@@ -10,6 +10,7 @@ import (
 
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/client"
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/clienthandler"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 
 	"go.bug.st/serial"
@@ -67,6 +68,17 @@ func TestB27OnByTCP(t *testing.T) {
 
 	// 0xff 外机 0x02 内机
 	rs, err := client.On(0x02)
+	assert.NoError(t, err)
+	assert.Equal(t, "01", hex.EncodeToString(rs.Data))
+}
+
+func TestB27Control(t *testing.T) {
+	handler, err := clienthandler.NewTCPClientHandler("192.168.1.220:4196", &clienthandler.B27Packager{})
+	assert.NoError(t, err)
+	client := client.NewB27Client(handler)
+
+	// 0xff 外机 0x02 内机
+	rs, err := client.Control(0x02, protocol.OFF, 26, 2, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, "01", hex.EncodeToString(rs.Data))
 }
