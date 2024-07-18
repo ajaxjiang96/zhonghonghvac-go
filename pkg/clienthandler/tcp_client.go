@@ -5,6 +5,8 @@ import (
 	"io"
 	"net"
 	"time"
+
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
 )
 
 type TCPTransporter struct {
@@ -13,12 +15,12 @@ type TCPTransporter struct {
 }
 
 type TCPClientHandler struct {
-	B19Packager
+	protocol.Packager
 	TCPTransporter
 }
 
 // NewTCPClientHandler allocates and initializes a TCPClientHandler.
-func NewTCPClientHandler(address string) (*TCPClientHandler, error) {
+func NewTCPClientHandler(address string, packager protocol.Packager) (*TCPClientHandler, error) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		return nil, err
@@ -29,7 +31,7 @@ func NewTCPClientHandler(address string) (*TCPClientHandler, error) {
 			conn:    conn,
 			timeout: 5 * time.Second,
 		},
-		B19Packager: B19Packager{},
+		Packager: packager,
 	}, nil
 }
 
@@ -47,8 +49,8 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 	}
 
 	bytesToRead := calculateResponseLength(aduRequest)
-	function1 := aduRequest[1]
-	function2 := aduRequest[4]
+	// function1 := aduRequest[1]
+	// function2 := aduRequest[4]
 
 	aduResponse = make([]byte, bytesToRead)
 	_, err = io.ReadFull(handler.conn, aduResponse)
@@ -56,13 +58,13 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 		return
 	}
 
-	if aduResponse[1] == function1 && aduResponse[4] == function2 {
-		err = fmt.Errorf("zonghongprotocol: response function code is invalid")
-		return
-	}
+	// if aduResponse[1] == function1 && aduResponse[4] == function2 {
+	// 	err = fmt.Errorf("zhonghongprotocol: response function code is invalid")
+	// 	return
+	// }
 
 	if len(aduResponse) != bytesToRead {
-		err = fmt.Errorf("zonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
+		err = fmt.Errorf("zhonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
 		return
 	}
 	return
