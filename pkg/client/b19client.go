@@ -220,6 +220,16 @@ func (mb *b19client) FloorHeatingAntiFreezeOff(data []uint16) (results *protocol
 	return resp, nil
 }
 
+func (mb *b19client) AllACStatus() (results *protocol.ProtocolDataUnit, err error) {
+	request := protocol.B19NormalEncode(0x01, protocol.FuncCodeACStatus, 0xFF, 0xFF, 0xFF, 0xFF)
+	resp, err := mb.send(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func (mb *b19client) ErrorCheck(data []uint16) (results *protocol.ProtocolDataUnit, err error) {
 	return nil, fmt.Errorf("zhonghong-b19 client: does not support following protocol")
 }

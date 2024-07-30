@@ -29,14 +29,23 @@ func PrependUint16(slice []uint16, element uint16) []uint16 {
 	return newSlice
 }
 
-func NormalEncode(data []uint16, funccode FuncCode) ProtocolDataUnit {
+func NormalEncode(data []uint16, funcCode FuncCode) ProtocolDataUnit {
 	len_data := uint16(len(data) + 4)
 	newArr := PrependUint16(data, len_data)
 	addressLen := dataBlockArray(newArr)
 	request := ProtocolDataUnit{
 		Header:       HeadCode,
-		FunctionCode: funccode,
+		FunctionCode: funcCode,
 		Address:      addressLen,
+	}
+	return request
+}
+
+func B19NormalEncode(controllerAddr byte, funcCode FuncCode, data ...byte) ProtocolDataUnit {
+	request := ProtocolDataUnit{
+		Header:       controllerAddr,
+		FunctionCode: funcCode,
+		Data:         data,
 	}
 	return request
 }

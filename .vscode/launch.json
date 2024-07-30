@@ -10,8 +10,15 @@
       "request": "launch",
       "mode": "auto",
       "program": "cli/cli.go",
-      "args": ["b27", "--o", "1", "--t", "26", "--m", "2", "--a", "2"],
-      
+      "args": ["b27", "--o", "1", "--t", "26", "--m", "2", "--a", "2"]
+    },
+    {
+      "name": "Launch B19 all ac status",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "cli/cli.go",
+      "args": ["b19", "status", "-a", "1"]
     }
   ]
 }

@@ -52,7 +52,7 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 		return
 	}
 	if bytesToRead == -1 {
-		bytesToRead = variableLengthCalculateResponseLength(aduRequest, data[3])
+		bytesToRead = VariableLengthCalculateResponseLength(aduRequest, data[3])
 	}
 
 	if data[1] == function1 || data[4] == function2 {
@@ -206,7 +206,7 @@ func calculateResponseLength(adu []byte) int {
 	return length
 }
 
-func variableLengthCalculateResponseLength(adu []byte, numDevices byte) int {
+func VariableLengthCalculateResponseLength(adu []byte, numDevices byte) int {
 	length := rtuMinSize
 	switch protocol.FuncCode(adu[1]) {
 	case protocol.FuncCodeACStatus:

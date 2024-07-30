@@ -49,3 +49,12 @@ func TestB19ReadGatewayByTCP(t *testing.T) {
 	}
 	assert.Equal(t, "ffff900c6ccbd7e1f965b5bea842e3b95c6000c0a801c9ffffff00c0a80101c0a801c815be270f01258002", hex.EncodeToString(rs.Data))
 }
+
+func TestB19AllACStatusByTCP(t *testing.T) {
+	handler, err := clienthandler.NewTCPClientHandler("192.168.1.220:4196", &clienthandler.B19Packager{})
+	assert.Nil(t, err)
+	client := client.NewB19Client(handler)
+
+	_, err = client.AllACStatus()
+	assert.NoError(t, err)
+}

@@ -49,23 +49,50 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 	}
 
 	bytesToRead := calculateResponseLength(aduRequest)
-	// function1 := aduRequest[1]
+	function1 := aduRequest[1]
 	// function2 := aduRequest[4]
 
-	aduResponse = make([]byte, bytesToRead)
-	_, err = io.ReadFull(handler.conn, aduResponse)
-	if err != nil {
+	if bytesToRead != -1 {
+
+		aduResponse = make([]byte, bytesToRead)
+		_, err = io.ReadFull(handler.conn, aduResponse)
+		if err != nil {
+			return
+		}
+
+		// if aduResponse[1] == function1 && aduResponse[4] == function2 {
+		// 	err = fmt.Errorf("zhonghongprotocol: response function code is invalid")
+		// 	return
+		// }
+
+		if len(aduResponse) != bytesToRead {
+			err = fmt.Errorf("zhonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
+			return
+		}
+		return
+	} else {
+		var n int
+		var n1 int
+		aduResponse = make([]byte, rtuMaxSize)
+		n, err = io.ReadAtLeast(handler.conn, aduResponse[:], rtuMinSize)
+		if err != nil {
+			return
+		}
+		// TODO: Sleep for a calculated delay
+		// time.Sleep(handler.calculateDelay(len(aduRequest) + bytesToRead))
+		bytesToRead = VariableLengthCalculateResponseLength(aduRequest, aduResponse[3])
+
+		if aduResponse[1] == function1 {
+			if n < bytesToRead {
+				if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
+					if bytesToRead > n {
+						n1, err = io.ReadFull(handler.conn, aduResponse[n:bytesToRead])
+						n += n1
+					}
+				}
+			}
+		}
+		aduResponse = aduResponse[:n]
 		return
 	}
-
-	// if aduResponse[1] == function1 && aduResponse[4] == function2 {
-	// 	err = fmt.Errorf("zhonghongprotocol: response function code is invalid")
-	// 	return
-	// }
-
-	if len(aduResponse) != bytesToRead {
-		err = fmt.Errorf("zhonghongprotocol: response length '%v' does not match expected '%v'", len(aduResponse), bytesToRead)
-		return
-	}
-	return
 }
