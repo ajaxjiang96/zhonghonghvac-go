@@ -6,6 +6,7 @@ import (
 
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/client"
 	"github.com/Yangsta911/zhonghonghvac-go/pkg/clienthandler"
+	"github.com/Yangsta911/zhonghonghvac-go/pkg/protocol"
 	"github.com/urfave/cli/v2"
 )
 
@@ -111,7 +112,7 @@ func main() {
 							devicesInfo := res.Data[2:]
 							for i := 0; i < int(numDevices); i++ {
 								device := devicesInfo[i*10 : i*10+10]
-								fmt.Printf("device %d-%d:\ton: %x, temp: %d, mode: %x, fanspeed: %x, room_temp: %d, errorcode: %x, direction: %x, is_slave: %x \n", device[0], device[1], device[2], device[3], device[4], device[5], device[6], device[7], device[8], device[9])
+								fmt.Printf("device %d-%d:\ton: %x, temp: %d, mode: %x, fanspeed: %x, room_temp: %d, errorcode: %x, direction: %x, is_slave: %x \n", device[0], device[1], device[2], device[3], protocol.ACMode(device[4]), protocol.FanSpeed(device[5]), device[6], device[7], device[8], device[9])
 							}
 
 							return nil
