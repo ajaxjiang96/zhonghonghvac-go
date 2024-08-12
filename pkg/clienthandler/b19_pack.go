@@ -74,3 +74,84 @@ func (mb *B19Packager) Verify(aduRequest []byte, aduResponse []byte) (err error)
 	}
 	return
 }
+
+func (p *B19Packager) VariableLengthCalculateResponseLength(adu []byte, numDevices uint) int {
+	length := rtuMinSize
+	switch protocol.FuncCode(adu[1]) {
+	case protocol.FuncCodeACStatus:
+		if adu[2] == 0x01 {
+			length = 15
+		} else if adu[2] == 0x0F {
+			length = int(adu[3])*10 + 5
+		} else if adu[2] == 0x04 || adu[2] == 0xFF {
+			length = int(numDevices)*10 + 5
+		} else if adu[2] == 0x02 {
+			length = int(numDevices)*2 + 4
+		}
+	default:
+	}
+	return length
+}
+
+func (p *B19Packager) CalculateResponseLength(adu []byte) int {
+	length := rtuMinSize
+	switch protocol.FuncCode(adu[1]) {
+	case protocol.FuncCodeReadGateway:
+		length = 46
+
+	case protocol.FuncCodeGatewayOnOff:
+		length = 7
+
+	case protocol.FuncCodeGatewayTemp:
+		length = 7
+
+	case protocol.FuncCodeGatewayControl:
+		length = 7
+
+	case protocol.FuncCodeGatewayWindSpeed:
+		length = 7
+
+	case protocol.FuncCodeGatewayWindDir:
+		length = 7
+
+	case protocol.FuncCodeGatewayNewAirOnOff:
+		length = 7
+
+	case protocol.FuncCodeGatewayNewAirMode:
+		length = 7
+
+	case protocol.FuncCodeGatewayNewAirSpeed:
+		length = 7
+
+	case protocol.FuncCodeACStatus:
+		if adu[2] == 0x01 {
+			length = 15
+		} else if adu[2] == 0x0F {
+			length = int(adu[3])*10 + 5
+		} else if adu[2] == 0x04 || adu[2] == 0xFF {
+			length = -1 //return -1 due to length being variable depending on number of devices
+		} else if adu[2] == 0x02 {
+			length = -1 //return -1 due to length being variable depending on number of devices
+		}
+
+	case protocol.FuncCodeFreshAirStatus:
+		if adu[2] == 0x01 {
+			length = 15
+		} else if adu[2] == 0x02 || adu[2] == 0xFF {
+			length = -1 //return -1 due to length being variable depending on number of devices
+		} else if adu[2] == 0x0F {
+			length = int(adu[3])*11 + 4
+		}
+
+	case protocol.FuncCodeFloorHeatingStatusCheck:
+		if adu[2] == 0x01 {
+			length = 15
+		} else if adu[2] == 0x02 || adu[2] == 0xFF {
+			length = -1 //return -1 due to length being variable depending on number of devices
+		} else if adu[2] == 0x0F {
+			length = int(adu[3])*11 + 4
+		}
+	default:
+	}
+	return length
+}

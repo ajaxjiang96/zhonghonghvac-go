@@ -1,5 +1,7 @@
 package protocol
 
+import "fmt"
+
 type FanSpeed byte // 风速，B19 and B27
 
 const (
@@ -16,21 +18,179 @@ const (
 	FanSpeedStop    FanSpeed = 0x08 // 停止
 )
 
+func (fs FanSpeed) String() string {
+	switch fs {
+	case FanSpeedAuto:
+		return "自动"
+	case FanSpeedLow:
+		return "低速"
+	case FanSpeedMid:
+		return "中速"
+	case FanSpeedHigh:
+		return "高速"
+	case FanSpeedMidHigh:
+		return "中高速"
+	case FanSpeedMidLow:
+		return "中低速"
+	case FanSpeedBreeze:
+		return "微风"
+	case FanSpeedTurbo:
+		return "超强"
+	case FanSpeedStop:
+		return "停止"
+	default:
+		return "未知"
+	}
+}
+
+type ACModeB19 byte // 空调模式，B19
+
+const (
+	ACModeB19Cooling    ACModeB19 = 0x01 // 设定制冷
+	ACModeB19Dehumidify ACModeB19 = 0x02 // 设定除湿
+	ACModeB19Ventilate  ACModeB19 = 0x04 // 设定送风
+	ACModeB19Heating    ACModeB19 = 0x08 // 设定制热
+
+	// 以下为非常规模式
+	ACModeB19Fresh          ACModeB19 = 0x03 // 设定清爽
+	ACModeB19AutoDehumidify ACModeB19 = 0x05 // 设定自动除湿
+	ACModeB19Sleep          ACModeB19 = 0x06 // 设定贴心睡眠
+	ACModeB19FloorHeating   ACModeB19 = 0x09 // 设定地暖
+	ACModeB19TurboHeating   ACModeB19 = 0x0A // 设定强热（地暖和制热同时开启）
+)
+
+func (am ACModeB19) String() string {
+	switch am {
+	case ACModeB19Heating:
+		return "制热"
+	case ACModeB19Cooling:
+		return "制冷"
+	case ACModeB19Ventilate:
+		return "送风"
+	case ACModeB19Dehumidify:
+		return "除湿"
+	case ACModeB19Fresh:
+		return "清爽"
+	case ACModeB19AutoDehumidify:
+		return "自动除湿"
+	case ACModeB19Sleep:
+		return "贴心睡眠"
+	case ACModeB19FloorHeating:
+		return "地暖"
+	case ACModeB19TurboHeating:
+		return "强热"
+	default:
+		return fmt.Sprintf("未知(%d)", am)
+	}
+}
+
+type ACModeB27 byte // 空调模式，B27
+
+const (
+	ACModeB27Heating    ACModeB27 = 0x01 // 设定制热
+	ACModeB27Cooling    ACModeB27 = 0x02 // 设定制冷
+	ACModeB27Ventilate  ACModeB27 = 0x04 // 设定送风
+	ACModeB27Dehumidify ACModeB27 = 0x08 // 设定除湿
+)
+
+func (am ACModeB27) String() string {
+	switch am {
+	case ACModeB27Heating:
+		return "制热"
+	case ACModeB27Cooling:
+		return "制冷"
+	case ACModeB27Ventilate:
+		return "送风"
+	case ACModeB27Dehumidify:
+		return "除湿"
+	default:
+		return fmt.Sprintf("未知(%d)", am)
+	}
+}
+
 type ACMode byte // 空调模式，B19 and B27
 
 const (
-	ACModeHeating    ACMode = 0x00 // 设定制热
-	ACModeCooling    ACMode = 0x01 // 设定制冷
-	ACModeVentilate  ACMode = 0x04 // 设定送风
-	ACModeDehumidify ACMode = 0x08 // 设定除湿
-
-	// 以下为非常规模式
-	ACModeFresh          ACMode = 0x03 // 设定清爽
-	ACModeAutoDehumidify ACMode = 0x05 // 设定自动除湿
-	ACModeSleep          ACMode = 0x06 // 设定贴心睡眠
-	ACModeFloorHeating   ACMode = 0x09 // 设定地暖
-	ACModeTurboHeating   ACMode = 0x0A // 设定强热（地暖和制热同时开启）
+	ACModeHeating    ACMode = iota // 设定制热
+	ACModeCooling                  // 设定制冷
+	ACModeVentilate                // 设定送风
+	ACModeDehumidify               // 设定除湿
+	ACModeUnknown    ACMode = 0xFF // 未知或不支持
 )
+
+func (am ACMode) String() string {
+	switch am {
+	case ACModeHeating:
+		return "制热"
+	case ACModeCooling:
+		return "制冷"
+	case ACModeVentilate:
+		return "送风"
+	case ACModeDehumidify:
+		return "除湿"
+	default:
+		return fmt.Sprintf("未知(%d)", am)
+	}
+}
+
+func (am ACMode) ToB19() ACModeB19 {
+	switch am {
+	case ACModeHeating:
+		return ACModeB19Heating
+	case ACModeCooling:
+		return ACModeB19Cooling
+	case ACModeVentilate:
+		return ACModeB19Ventilate
+	case ACModeDehumidify:
+		return ACModeB19Dehumidify
+	default:
+		return ACModeB19Cooling // 默认为制冷
+	}
+}
+
+func (am ACMode) ToB27() ACModeB27 {
+	switch am {
+	case ACModeHeating:
+		return ACModeB27Heating
+	case ACModeCooling:
+		return ACModeB27Cooling
+	case ACModeVentilate:
+		return ACModeB27Ventilate
+	case ACModeDehumidify:
+		return ACModeB27Dehumidify
+	default:
+		return ACModeB27Cooling // 默认为制冷
+	}
+}
+func ACModeFromB19(b19 ACModeB19) ACMode {
+	switch b19 {
+	case ACModeB19Heating:
+		return ACModeHeating
+	case ACModeB19Cooling:
+		return ACModeCooling
+	case ACModeB19Ventilate:
+		return ACModeVentilate
+	case ACModeB19Dehumidify:
+		return ACModeDehumidify
+	default:
+		return ACModeUnknown
+	}
+}
+
+func ACModeFromB27(b27 ACModeB27) ACMode {
+	switch b27 {
+	case ACModeB27Heating:
+		return ACModeHeating
+	case ACModeB27Cooling:
+		return ACModeCooling
+	case ACModeB27Ventilate:
+		return ACModeVentilate
+	case ACModeB27Dehumidify:
+		return ACModeDehumidify
+	default:
+		return ACModeUnknown
+	}
+}
 
 type ACStatus byte // 空调状态，B19 and B27
 
@@ -39,6 +199,19 @@ const (
 	ACStatusOffline   ACStatus = 0x02 // 离线
 	ACStatusSearching ACStatus = 0x03 // 搜索中
 )
+
+func (as ACStatus) String() string {
+	switch as {
+	case ACStatusOnline:
+		return "在线"
+	case ACStatusOffline:
+		return "离线"
+	case ACStatusSearching:
+		return "搜索中"
+	default:
+		return fmt.Sprintf("未知(%d)", as)
+	}
+}
 
 type ACBrand byte // 空调品牌，B19 and B27
 
@@ -120,6 +293,31 @@ const (
 	ACWindDirAuto  ACWindDir = 0xFF // 自动摆动
 )
 
+func (wd ACWindDir) String() string {
+	switch wd {
+	case ACWindDirNoDir:
+		return "无风向"
+	case ACWindDirPos1:
+		return "位置1"
+	case ACWindDirPos2:
+		return "位置2"
+	case ACWindDirPos3:
+		return "位置3"
+	case ACWindDirPos4:
+		return "位置4"
+	case ACWindDirPos5:
+		return "位置5"
+	case ACWindDirPos6:
+		return "位置6"
+	case ACWindDirPos7:
+		return "位置7"
+	case ACWindDirAuto:
+		return "自动摆动"
+	default:
+		return fmt.Sprintf("未知(%d)", wd)
+	}
+}
+
 type FuncCode byte
 
 const (
@@ -142,6 +340,7 @@ const (
 	FuncCodePerformanceCheck                   FuncCode = 0x01
 	FuncCodeStatusCheck                        FuncCode = 0x02
 	FuncCodeOnOff                              FuncCode = 0x03
+	FuncCodeControl                            FuncCode = 0x03
 	FuncCodeErrorCheck                         FuncCode = 0x04
 	FuncCodeFreshAirStatus                     FuncCode = 0x11
 	FuncCodeFreshAirPerformance                FuncCode = 0x12

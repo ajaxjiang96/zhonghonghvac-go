@@ -11,20 +11,6 @@ func bytesToIP(b []byte) string {
 	return net.IP(b).String()
 }
 
-type GatewayInfo struct {
-	DeviceId   string `json:"device_id"`
-	Dhcp       bool   `json:"dhcp"`
-	IpAddr     string `json:"ip_addr"`
-	IpMask     string `json:"ip_mask"`
-	IpGateway  string `json:"ip_gateway"`
-	RemoteIp   string `json:"remote_ip"`
-	RemotePort string `json:"remote_port"`
-	LocalPort  string `json:"local_port"`
-	SlaveId    string `json:"slave_id"`
-	BaudRate   string `json:"baud_rate"`
-	Validation string `json:"validation"`
-}
-
 func ParseReadGateway(pdu ProtocolDataUnit) (gatewayInfo GatewayInfo, err error) {
 	if len(pdu.Data) != 43 {
 		return gatewayInfo, fmt.Errorf("pdu.Data length is not 43")

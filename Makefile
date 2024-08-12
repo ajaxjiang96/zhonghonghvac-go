@@ -1,4 +1,4 @@
 cli:
-	go build -o bin/cli cli/*.go
+	go build -o bin/cli cmd/*.go
 
 all: cli

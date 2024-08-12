@@ -298,7 +298,7 @@ func (mb *B27client) send(request *protocol.ProtocolDataUnit) (response *protoco
 	if err != nil {
 		return
 	}
-	aduResponse, err := mb.transporter.Send(aduRequest)
+	aduResponse, err := mb.transporter.Send(aduRequest, mb.packager)
 	if err != nil {
 		return
 	}

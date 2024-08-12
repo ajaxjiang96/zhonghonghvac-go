@@ -36,7 +36,7 @@ func NewTCPClientHandler(address string, packager protocol.Packager) (*TCPClient
 }
 
 // Sends request via tcp connection and retrieves the response.
-func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, err error) {
+func (handler *TCPClientHandler) Send(aduRequest []byte, packager protocol.Packager) (aduResponse []byte, err error) {
 	// set an i/o deadline on the socket (read and write)
 	err = handler.conn.SetDeadline(time.Now().Add(handler.timeout))
 	if err != nil {
@@ -48,7 +48,7 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 		return
 	}
 
-	bytesToRead := calculateResponseLength(aduRequest)
+	bytesToRead := packager.CalculateResponseLength(aduRequest)
 	function1 := aduRequest[1]
 	// function2 := aduRequest[4]
 
@@ -80,7 +80,7 @@ func (handler *TCPClientHandler) Send(aduRequest []byte) (aduResponse []byte, er
 		}
 		// TODO: Sleep for a calculated delay
 		// time.Sleep(handler.calculateDelay(len(aduRequest) + bytesToRead))
-		bytesToRead = VariableLengthCalculateResponseLength(aduRequest, aduResponse[3])
+		bytesToRead = handler.VariableLengthCalculateResponseLength(aduRequest, uint(aduResponse[3]))
 
 		if aduResponse[1] == function1 {
 			if n < bytesToRead {
