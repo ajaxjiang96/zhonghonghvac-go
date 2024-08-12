@@ -38,7 +38,7 @@ type ACClient interface {
 	ModeControl(addr string, value protocol.ACMode) (results *protocol.ACControlResponse, err error)
 	WindSpeedControl(addr string, value protocol.FanSpeed) (results *protocol.ACControlResponse, err error)
 	WindDirControl(addr string, value protocol.ACWindDir) (results *protocol.ACControlResponse, err error)
-	ErrorCheck() (results *protocol.ProtocolDataUnit, err error)
+	ErrorCheck(addr string) (results *protocol.ProtocolDataUnit, err error)
 }
 
 type FreshAirClient interface {

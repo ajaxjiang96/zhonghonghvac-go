@@ -25,7 +25,7 @@ type AC struct {
 	FanSpeed  FanSpeed  `json:"fan_speed"`
 	Mode      ACMode    `json:"mode"` // B19 and B27 use different mode values
 	RoomTemp  uint      `json:"room_temp"`
-	ErrorCode byte      `json:"error_code"`
+	Error     bool      `json:"error"`
 	Direction ACWindDir `json:"direction"`
 	IsSlave   bool      `json:"is_slave"`
 }
@@ -37,7 +37,7 @@ Temp:		%d
 FanSpeed:	%s
 Mode:		%s
 RoomTemp:	%d
-ErrorCode:	%d
+Error:	%t
 Direction:	%s
 IsSlave:	%t`,
 		ac.Id,
@@ -46,17 +46,17 @@ IsSlave:	%t`,
 		ac.FanSpeed,
 		ac.Mode,
 		ac.RoomTemp,
-		ac.ErrorCode,
+		ac.Error,
 		ac.Direction,
 		ac.IsSlave)
 }
 
 type ACControlRequest struct {
-	On        *bool      `json:"on"`
-	Temp      *uint      `json:"temp"`
-	FanSpeed  *FanSpeed  `json:"fan_speed"`
-	Mode      *ACMode    `json:"mode"` // B19 and B27 use different mode values
-	Direction *ACWindDir `json:"direction"`
+	On        *bool      `json:"on,omitempty"`
+	Temp      *uint      `json:"temp,omitempty"`
+	FanSpeed  *FanSpeed  `json:"fan_speed,omitempty"`
+	Mode      *ACMode    `json:"mode,omitempty"` // B19 and B27 use different mode values
+	Direction *ACWindDir `json:"direction,omitempty"`
 }
 
 type ACPerformanceResponse struct {

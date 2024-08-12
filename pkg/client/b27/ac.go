@@ -91,7 +91,7 @@ func (c *Client) StatusCheck(addr string) (results *protocol.ACStatusResponse, e
 			FanSpeed:  protocol.FanSpeed(resPdu.Data[3]),
 			Direction: protocol.ACWindDir(resPdu.Data[4]),
 			RoomTemp:  uint(resPdu.Data[5]),
-			ErrorCode: resPdu.Data[6], // 0x00: no error, 0x01: error, need send command 0x04 for detail
+			Error:     resPdu.Data[6] != 0x00, // 0x00: no error, 0x01: error, need send command 0x04 for detail
 		},
 	}, nil
 }
@@ -133,29 +133,69 @@ func (c *Client) Control(addr string, data protocol.ACControlRequest) (results *
 }
 
 func (c *Client) On(addr string) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	on := true
+	return c.Control(addr, protocol.ACControlRequest{
+		On: &on,
+	})
 }
 
 func (c *Client) Off(addr string) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	on := false
+	return c.Control(addr, protocol.ACControlRequest{
+		On: &on,
+	})
 }
 
 func (c *Client) TempControl(addr string, value uint) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	return c.Control(addr, protocol.ACControlRequest{
+		Temp: &value,
+	})
 }
 
 func (c *Client) ModeControl(addr string, value protocol.ACMode) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	return c.Control(addr, protocol.ACControlRequest{
+		Mode: &value,
+	})
 }
 
 func (c *Client) WindSpeedControl(addr string, value protocol.FanSpeed) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	return c.Control(addr, protocol.ACControlRequest{
+		FanSpeed: &value,
+	})
 }
 
 func (c *Client) WindDirControl(addr string, value protocol.ACWindDir) (results *protocol.ACControlResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	return c.Control(addr, protocol.ACControlRequest{
+		Direction: &value,
+	})
 }
 
-func (c *Client) ErrorCheck() (results *protocol.ProtocolDataUnit, err error) {
-	panic("not implemented") // TODO: Implement
+func (c *Client) ErrorCheck(addr string) (result string, err error) {
+	addrBytes, err := ParseAddr(addr)
+	if err != nil {
+		return "", err
+	}
+	request := protocol.B27NormalEncode(addrBytes, protocol.FuncCodeErrorCheck)
+	adu, err := c.packager.Encode(&request)
+	if err != nil {
+		return "", err
+	}
+	resp, err := c.transporter.Send(adu, c.packager)
+	if err != nil {
+		return "", err
+	}
+
+	resPdu, err := c.packager.Decode(resp)
+	if err != nil {
+		return "", err
+	}
+
+	codeLen := uint(resPdu.Data[0])
+	if codeLen != uint(len(resPdu.Data)-1) {
+		return "", fmt.Errorf("message length is not correct")
+	}
+
+	errorCode := string(resPdu.Data[1:])
+
+	return errorCode, nil
 }
