@@ -49,9 +49,7 @@ func (c *Client) performanceCheckOne(addr string) (results *protocol.BatchACPerf
 
 	numDevices := resPdu.Data[1]
 	data := resPdu.Data[2:]
-	if results == nil {
-		results = &protocol.BatchACPerformanceResponse{}
-	}
+	results = &protocol.BatchACPerformanceResponse{}
 	results.Total = uint(numDevices)
 	for i := 0; i < int(numDevices); i++ {
 		extAddr := data[i*3]
