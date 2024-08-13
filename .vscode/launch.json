@@ -21,6 +21,14 @@
       "args": ["b27", "--a", "2", "performance"]
     },
     {
+      "name": "B19 status",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "cmd/cli.go",
+      "args": ["b19", "--a", "1-9", "status"]
+    },
+    {
       "name": "Generic performance",
       "type": "go",
       "request": "launch",

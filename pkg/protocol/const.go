@@ -367,3 +367,13 @@ const (
 	ValidationOdd
 	ValidationEven
 )
+
+type B19Command byte
+
+const (
+	B19CheckOneACStatus       B19Command = 0x01
+	B19CheckAllACOnlineStatus B19Command = 0x02
+	B19CheckAllACErrorCode    B19Command = 0x04
+	B19CheckMultipleACStatus  B19Command = 0x0F
+	B19CheckAllACstatus       B19Command = 0xFF
+)

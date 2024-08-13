@@ -37,7 +37,7 @@ Temp:		%d
 FanSpeed:	%s
 Mode:		%s
 RoomTemp:	%d
-Error:	%t
+Error:		%t
 Direction:	%s
 IsSlave:	%t`,
 		ac.Id,

@@ -49,6 +49,9 @@ func (c *Client) performanceCheckOne(addr string) (results *protocol.BatchACPerf
 
 	numDevices := resPdu.Data[1]
 	data := resPdu.Data[2:]
+	if results == nil {
+		results = &protocol.BatchACPerformanceResponse{}
+	}
 	results.Total = uint(numDevices)
 	for i := 0; i < int(numDevices); i++ {
 		extAddr := data[i*3]
@@ -67,7 +70,46 @@ func (c *Client) performanceCheckOne(addr string) (results *protocol.BatchACPerf
 }
 
 func (c *Client) StatusCheck(addr string) (results *protocol.ACStatusResponse, err error) {
-	panic("not implemented") // TODO: Implement
+	addrBytes, err := ParseAddr(addr)
+	if err != nil {
+		return nil, err
+	}
+	request := protocol.ProtocolDataUnit{
+		Header:       addrBytes[0],
+		FunctionCode: protocol.FuncCodeACStatus,
+		Data:         []byte{byte(protocol.B19CheckOneACStatus), 0x01, addrBytes[0], addrBytes[1]},
+	}
+	reqAdu, err := c.packager.Encode(&request)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.transporter.Send(reqAdu, c.packager)
+	if err != nil {
+		return nil, err
+	}
+	resPdu, err := c.packager.Decode(resp)
+	if err != nil {
+		return nil, err
+	}
+	addrStr := fmt.Sprintf("%d-%d", resPdu.Data[2], resPdu.Data[3])
+	data := resPdu.Data[4:]
+	status := &protocol.ACStatusResponse{
+		AC: protocol.AC{
+			ExtAddr:   fmt.Sprintf("%d", resPdu.Data[2]),
+			IntAddr:   fmt.Sprintf("%d", resPdu.Data[3]),
+			Id:        addrStr,
+			On:        data[0] == 0x01,
+			Temp:      uint(data[1]),
+			Mode:      protocol.ACModeFromB19(protocol.ACModeB19((data[2]))),
+			FanSpeed:  protocol.FanSpeed(data[3]),
+			RoomTemp:  uint(data[4]),
+			Error:     data[5] != 0x00, // 0x00: no error, 0x01: error, need send command 0x04 for detail
+			Direction: protocol.ACWindDir(data[6]),
+			IsSlave:   data[7] == 0x01,
+		},
+	}
+
+	return status, nil
 }
 
 func (c *Client) Control(addr string, data protocol.ACControlRequest) (results *protocol.ACControlResponse, err error) {
@@ -98,6 +140,6 @@ func (c *Client) WindDirControl(addr string, value protocol.ACWindDir) (results 
 	panic("not implemented") // TODO: Implement
 }
 
-func (c *Client) ErrorCheck() (results *protocol.ProtocolDataUnit, err error) {
+func (c *Client) ErrorCheck(addr string) (results string, err error) {
 	panic("not implemented") // TODO: Implement
 }
