@@ -86,11 +86,11 @@ func (c *Client) StatusCheck(addr string) (results *protocol.ACStatusResponse, e
 			IntAddr:   fmt.Sprintf("%d", resPdu.Address[1]),
 			Id:        addrStr,
 			On:        resPdu.Data[0] == 0x01,
-			Temp:      uint(resPdu.Data[1]),
+			Temp:      int(resPdu.Data[1]),
 			Mode:      protocol.ACModeFromB27(protocol.ACModeB27((resPdu.Data[2]))),
 			FanSpeed:  protocol.FanSpeed(resPdu.Data[3]),
 			Direction: protocol.ACWindDir(resPdu.Data[4]),
-			RoomTemp:  uint(resPdu.Data[5]),
+			RoomTemp:  int(resPdu.Data[5]),
 			Error:     resPdu.Data[6] != 0x00, // 0x00: no error, 0x01: error, need send command 0x04 for detail
 		},
 	}, nil
@@ -146,7 +146,7 @@ func (c *Client) Off(addr string) (results *protocol.ACControlResponse, err erro
 	})
 }
 
-func (c *Client) TempControl(addr string, value uint) (results *protocol.ACControlResponse, err error) {
+func (c *Client) TempControl(addr string, value int) (results *protocol.ACControlResponse, err error) {
 	return c.Control(addr, protocol.ACControlRequest{
 		Temp: &value,
 	})

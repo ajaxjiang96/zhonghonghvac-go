@@ -18,7 +18,7 @@ func (c *Client) BatchOff(devices []string) (results *protocol.ACControlResponse
 	panic("not implemented") // TODO: Implement
 }
 
-func (c *Client) BatchTempControl(devices []string, value uint) (results *protocol.ACControlResponse, err error) {
+func (c *Client) BatchTempControl(devices []string, value int) (results *protocol.ACControlResponse, err error) {
 	panic("not implemented") // TODO: Implement
 }
 

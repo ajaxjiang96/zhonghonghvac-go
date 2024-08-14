@@ -97,10 +97,10 @@ func (c *Client) StatusCheck(addr string) (results *protocol.ACStatusResponse, e
 			IntAddr:   fmt.Sprintf("%d", resPdu.Data[3]),
 			Id:        addrStr,
 			On:        data[0] == 0x01,
-			Temp:      uint(data[1]),
+			Temp:      int(data[1]),
 			Mode:      protocol.ACModeFromB19(protocol.ACModeB19((data[2]))),
 			FanSpeed:  protocol.FanSpeed(data[3]),
-			RoomTemp:  uint(data[4]),
+			RoomTemp:  int(data[4]),
 			Error:     data[5] != 0x00, // 0x00: no error, 0x01: error, need send command 0x04 for detail
 			Direction: protocol.ACWindDir(data[6]),
 			IsSlave:   data[7] == 0x01,
@@ -122,7 +122,7 @@ func (c *Client) Off(addr string) (results *protocol.ACControlResponse, err erro
 	panic("not implemented") // TODO: Implement
 }
 
-func (c *Client) TempControl(addr string, value uint) (results *protocol.ACControlResponse, err error) {
+func (c *Client) TempControl(addr string, value int) (results *protocol.ACControlResponse, err error) {
 	panic("not implemented") // TODO: Implement
 }
 
